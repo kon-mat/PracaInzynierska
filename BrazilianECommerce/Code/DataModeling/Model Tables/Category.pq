@@ -1,7 +1,7 @@
 let
   // Wczytanie danych z pliku CSV o nazwie "product_category_name_translation.csv"
   Source = Csv.Document(
-    File.Contents("D:\Programowanie\PracaDyplomowa\BrazilianECommerce\Dataset\product_category_name_translation.csv"), 
+    File.Contents("D:\Programowanie\PracaInzynierska\BrazilianECommerce\Dataset\product_category_name_translation.csv"), 
     [Delimiter = ",", Columns = 2, Encoding = 65001, QuoteStyle = QuoteStyle.None]
   ),
 

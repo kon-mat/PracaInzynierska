@@ -2,7 +2,7 @@ let
   // Wczytanie danych z pliku CSV do tabeli
   Source = Csv.Document(
     File.Contents(
-      "D:\Programowanie\PracaDyplomowa\BrazilianECommerce\Dataset\product_category_name_translation.csv"
+      "D:\Programowanie\PracaInzynierska\BrazilianECommerce\Dataset\product_category_name_translation.csv"
     ), 
     [Delimiter = ",", Columns = 2, Encoding = 65001, QuoteStyle = QuoteStyle.None]
   ), 
