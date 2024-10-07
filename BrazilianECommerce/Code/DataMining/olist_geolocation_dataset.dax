@@ -1,0 +1,60 @@
+﻿
+
+// Ilosc wystapien rekordow dla poszczegolnych geolocation_zip_code_prefix
+EVALUATE
+SUMMARIZE(
+    olist_geolocation_dataset,
+    olist_geolocation_dataset[geolocation_zip_code_prefix],
+    "Count of Records", COUNTROWS(olist_geolocation_dataset)
+)
+ORDER BY
+    [Count of Records] DESC
+
+
+// Unikalnosc wierszy
+EVALUATE
+VAR TotalRowCount =
+    COUNTROWS ( olist_geolocation_dataset )
+VAR UniqueRowCount =
+    COUNTROWS (
+        SUMMARIZE (
+            olist_geolocation_dataset,
+            olist_geolocation_dataset[geolocation_city],
+            olist_geolocation_dataset[geolocation_lat],
+            olist_geolocation_dataset[geolocation_lng],
+            olist_geolocation_dataset[geolocation_state],
+            olist_geolocation_dataset[geolocation_zip_code_prefix]
+        )
+    )
+RETURN
+    ROW (
+        "Total Row Count", TotalRowCount,
+        "Unique Row Count", UniqueRowCount,
+        "All Rows Unique", IF ( TotalRowCount = UniqueRowCount, "Yes", "No" )
+    )
+
+
+// Roznice pomiedzy wartosciami skrajnymi dla Latitude i Longitude
+EVALUATE
+VAR UniqueTable =
+    SUMMARIZE (
+        olist_geolocation_dataset,
+        olist_geolocation_dataset[geolocation_city],
+        olist_geolocation_dataset[geolocation_state],
+        olist_geolocation_dataset[geolocation_zip_code_prefix],
+        "Minimum Latitude", MIN ( olist_geolocation_dataset[geolocation_lat] ),
+        "Median Latitude", MEDIAN(olist_geolocation_dataset[geolocation_lat]),
+        "Maximum Latitude", MAX ( olist_geolocation_dataset[geolocation_lat] ),
+        "Latitude Difference",
+            MAX ( olist_geolocation_dataset[geolocation_lat] )
+                - MIN ( olist_geolocation_dataset[geolocation_lat] ),
+        "Minimum Longitude", MIN ( olist_geolocation_dataset[geolocation_lng] ),	
+        "Median Longitude", MEDIAN(olist_geolocation_dataset[geolocation_lng]),
+        "Maximum Longitude", MAX ( olist_geolocation_dataset[geolocation_lng] ),
+        "Longitude Difference",
+            MAX ( olist_geolocation_dataset[geolocation_lng] )
+                - MIN ( olist_geolocation_dataset[geolocation_lng] )1
+    ) 
+RETURN
+    UniqueTable
+
