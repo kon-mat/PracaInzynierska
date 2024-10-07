@@ -1,0 +1,263 @@
+﻿
+
+// Statystyki kolumn
+EVALUATE
+UNION (
+    ROW (
+        "Table", "olist_order_items_dataset",
+        "Column", "order_id",
+        "Count", COUNT ( 'olist_order_items_dataset'[order_id] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_items_dataset'[order_id] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_items_dataset' )
+                - COUNT ( 'olist_order_items_dataset'[order_id] ),
+        "Min", MIN ( 'olist_order_items_dataset'[order_id] ),
+        "Max", MAX ( 'olist_order_items_dataset'[order_id] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_order_items_dataset",
+        "Column", "order_item_id",
+        "Count", COUNT ( 'olist_order_items_dataset'[order_item_id] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_items_dataset'[order_item_id] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_items_dataset' )
+                - COUNT ( 'olist_order_items_dataset'[order_item_id] ),
+        "Min", MIN ( 'olist_order_items_dataset'[order_item_id] ),
+        "Max", MAX ( 'olist_order_items_dataset'[order_item_id] ),
+        "Median", MEDIAN ( 'olist_order_items_dataset'[order_item_id] ),
+        "Mean", AVERAGE ( 'olist_order_items_dataset'[order_item_id] ),
+        "Standard Deviation", STDEV.P ( 'olist_order_items_dataset'[order_item_id] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_items_dataset',
+                        'olist_order_items_dataset'[order_item_id] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_items_dataset',
+                        MOD ( 'olist_order_items_dataset'[order_item_id], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_items_dataset',
+                        MOD ( 'olist_order_items_dataset'[order_item_id], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_order_items_dataset'[order_item_id], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_order_items_dataset'[order_item_id], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_order_items_dataset",
+        "Column", "product_id",
+        "Count", COUNT ( 'olist_order_items_dataset'[product_id] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_items_dataset'[product_id] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_items_dataset' )
+                - COUNT ( 'olist_order_items_dataset'[product_id] ),
+        "Min", MIN ( 'olist_order_items_dataset'[product_id] ),
+        "Max", MAX ( 'olist_order_items_dataset'[product_id] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_order_items_dataset",
+        "Column", "seller_id",
+        "Count", COUNT ( 'olist_order_items_dataset'[seller_id] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_items_dataset'[seller_id] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_items_dataset' )
+                - COUNT ( 'olist_order_items_dataset'[seller_id] ),
+        "Min", MIN ( 'olist_order_items_dataset'[seller_id] ),
+        "Max", MAX ( 'olist_order_items_dataset'[seller_id] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_order_items_dataset",
+        "Column", "shipping_limit_date",
+        "Count", COUNT ( 'olist_order_items_dataset'[shipping_limit_date] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_items_dataset'[shipping_limit_date] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_items_dataset' )
+                - COUNT ( 'olist_order_items_dataset'[shipping_limit_date] ),
+        "Min", MIN ( 'olist_order_items_dataset'[shipping_limit_date] ),
+        "Max", MAX ( 'olist_order_items_dataset'[shipping_limit_date] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_items_dataset',
+                        'olist_order_items_dataset'[shipping_limit_date] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days",
+            DATEDIFF (
+                MIN ( 'olist_order_items_dataset'[shipping_limit_date] ),
+                MAX ( 'olist_order_items_dataset'[shipping_limit_date] ),
+                DAY
+            ),
+        "Range in Months",
+            DATEDIFF (
+                MIN ( 'olist_order_items_dataset'[shipping_limit_date] ),
+                MAX ( 'olist_order_items_dataset'[shipping_limit_date] ),
+                MONTH
+            ),
+        "Range in Years",
+            DATEDIFF (
+                MIN ( 'olist_order_items_dataset'[shipping_limit_date] ),
+                MAX ( 'olist_order_items_dataset'[shipping_limit_date] ),
+                YEAR
+            )
+    ),
+    ROW (
+        "Table", "olist_order_items_dataset",
+        "Column", "price",
+        "Count", COUNT ( 'olist_order_items_dataset'[price] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_items_dataset'[price] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_items_dataset' )
+                - COUNT ( 'olist_order_items_dataset'[price] ),
+        "Min", MIN ( 'olist_order_items_dataset'[price] ),
+        "Max", MAX ( 'olist_order_items_dataset'[price] ),
+        "Median", MEDIAN ( 'olist_order_items_dataset'[price] ),
+        "Mean", AVERAGE ( 'olist_order_items_dataset'[price] ),
+        "Standard Deviation", STDEV.P ( 'olist_order_items_dataset'[price] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER ( 'olist_order_items_dataset', 'olist_order_items_dataset'[price] = 0 )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_items_dataset',
+                        MOD ( 'olist_order_items_dataset'[price], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_items_dataset',
+                        MOD ( 'olist_order_items_dataset'[price], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_order_items_dataset'[price], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_order_items_dataset'[price], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_order_items_dataset",
+        "Column", "freight_value",
+        "Count", COUNT ( 'olist_order_items_dataset'[freight_value] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_items_dataset'[freight_value] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_items_dataset' )
+                - COUNT ( 'olist_order_items_dataset'[freight_value] ),
+        "Min", MIN ( 'olist_order_items_dataset'[freight_value] ),
+        "Max", MAX ( 'olist_order_items_dataset'[freight_value] ),
+        "Median", MEDIAN ( 'olist_order_items_dataset'[freight_value] ),
+        "Mean", AVERAGE ( 'olist_order_items_dataset'[freight_value] ),
+        "Standard Deviation", STDEV.P ( 'olist_order_items_dataset'[freight_value] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_items_dataset',
+                        'olist_order_items_dataset'[freight_value] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_items_dataset',
+                        MOD ( 'olist_order_items_dataset'[freight_value], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_items_dataset',
+                        MOD ( 'olist_order_items_dataset'[freight_value], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_order_items_dataset'[freight_value], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_order_items_dataset'[freight_value], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    )
+)
+

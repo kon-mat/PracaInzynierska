@@ -1,0 +1,403 @@
+﻿
+
+// Statystyki kolumn
+// 610 wierszy z null'ami dla name_lenght, description_lenght, photos_qty
+// 2 wiersze z null'ami dla weight_g, length_cm, height_cm, width_cm
+// 74 różne kategorie produktów (w tabeli product_category_name_translation 71 kategorii, czyli o 3 za mało)
+EVALUATE
+UNION (
+    ROW (
+        "Table", "olist_products_dataset",
+        "Column", "product_id",
+        "Count", COUNT ( 'olist_products_dataset'[product_id] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_products_dataset'[product_id] ),
+        "Null Count",
+            COUNTROWS ( 'olist_products_dataset' )
+                - COUNT ( 'olist_products_dataset'[product_id] ),
+        "Min", MIN ( 'olist_products_dataset'[product_id] ),
+        "Max", MAX ( 'olist_products_dataset'[product_id] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_products_dataset",
+        "Column", "product_category_name",
+        "Count", COUNT ( 'olist_products_dataset'[product_category_name] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_products_dataset'[product_category_name] ),
+        "Null Count",
+            COUNTROWS ( 'olist_products_dataset' )
+                - COUNT ( 'olist_products_dataset'[product_category_name] ),
+        "Min", MIN ( 'olist_products_dataset'[product_category_name] ),
+        "Max", MAX ( 'olist_products_dataset'[product_category_name] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_products_dataset",
+        "Column", "product_name_lenght",
+        "Count", COUNT ( 'olist_products_dataset'[product_name_lenght] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_products_dataset'[product_name_lenght] ),
+        "Null Count",
+            COUNTROWS ( 'olist_products_dataset' )
+                - COUNT ( 'olist_products_dataset'[product_name_lenght] ),
+        "Min", MIN ( 'olist_products_dataset'[product_name_lenght] ),
+        "Max", MAX ( 'olist_products_dataset'[product_name_lenght] ),
+        "Median", MEDIAN ( 'olist_products_dataset'[product_name_lenght] ),
+        "Mean", AVERAGE ( 'olist_products_dataset'[product_name_lenght] ),
+        "Standard Deviation", STDEV.P ( 'olist_products_dataset'[product_name_lenght] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        'olist_products_dataset'[product_name_lenght] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_name_lenght], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_name_lenght], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_products_dataset'[product_name_lenght], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_products_dataset'[product_name_lenght], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_products_dataset",
+        "Column", "product_description_lenght",
+        "Count", COUNT ( 'olist_products_dataset'[product_description_lenght] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_products_dataset'[product_description_lenght] ),
+        "Null Count",
+            COUNTROWS ( 'olist_products_dataset' )
+                - COUNT ( 'olist_products_dataset'[product_description_lenght] ),
+        "Min", MIN ( 'olist_products_dataset'[product_description_lenght] ),
+        "Max", MAX ( 'olist_products_dataset'[product_description_lenght] ),
+        "Median", MEDIAN ( 'olist_products_dataset'[product_description_lenght] ),
+        "Mean", AVERAGE ( 'olist_products_dataset'[product_description_lenght] ),
+        "Standard Deviation", STDEV.P ( 'olist_products_dataset'[product_description_lenght] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        'olist_products_dataset'[product_description_lenght] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_description_lenght], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_description_lenght], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_products_dataset'[product_description_lenght], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_products_dataset'[product_description_lenght], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_products_dataset",
+        "Column", "product_photos_qty",
+        "Count", COUNT ( 'olist_products_dataset'[product_photos_qty] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_products_dataset'[product_photos_qty] ),
+        "Null Count",
+            COUNTROWS ( 'olist_products_dataset' )
+                - COUNT ( 'olist_products_dataset'[product_photos_qty] ),
+        "Min", MIN ( 'olist_products_dataset'[product_photos_qty] ),
+        "Max", MAX ( 'olist_products_dataset'[product_photos_qty] ),
+        "Median", MEDIAN ( 'olist_products_dataset'[product_photos_qty] ),
+        "Mean", AVERAGE ( 'olist_products_dataset'[product_photos_qty] ),
+        "Standard Deviation", STDEV.P ( 'olist_products_dataset'[product_photos_qty] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        'olist_products_dataset'[product_photos_qty] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_photos_qty], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_photos_qty], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_products_dataset'[product_photos_qty], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_products_dataset'[product_photos_qty], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_products_dataset",
+        "Column", "product_weight_g",
+        "Count", COUNT ( 'olist_products_dataset'[product_weight_g] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_products_dataset'[product_weight_g] ),
+        "Null Count",
+            COUNTROWS ( 'olist_products_dataset' )
+                - COUNT ( 'olist_products_dataset'[product_weight_g] ),
+        "Min", MIN ( 'olist_products_dataset'[product_weight_g] ),
+        "Max", MAX ( 'olist_products_dataset'[product_weight_g] ),
+        "Median", MEDIAN ( 'olist_products_dataset'[product_weight_g] ),
+        "Mean", AVERAGE ( 'olist_products_dataset'[product_weight_g] ),
+        "Standard Deviation", STDEV.P ( 'olist_products_dataset'[product_weight_g] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        'olist_products_dataset'[product_weight_g] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_weight_g], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_weight_g], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_products_dataset'[product_weight_g], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_products_dataset'[product_weight_g], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_products_dataset",
+        "Column", "product_length_cm",
+        "Count", COUNT ( 'olist_products_dataset'[product_length_cm] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_products_dataset'[product_length_cm] ),
+        "Null Count",
+            COUNTROWS ( 'olist_products_dataset' )
+                - COUNT ( 'olist_products_dataset'[product_length_cm] ),
+        "Min", MIN ( 'olist_products_dataset'[product_length_cm] ),
+        "Max", MAX ( 'olist_products_dataset'[product_length_cm] ),
+        "Median", MEDIAN ( 'olist_products_dataset'[product_length_cm] ),
+        "Mean", AVERAGE ( 'olist_products_dataset'[product_length_cm] ),
+        "Standard Deviation", STDEV.P ( 'olist_products_dataset'[product_length_cm] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        'olist_products_dataset'[product_length_cm] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_length_cm], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_length_cm], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_products_dataset'[product_length_cm], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_products_dataset'[product_length_cm], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_products_dataset",
+        "Column", "product_height_cm",
+        "Count", COUNT ( 'olist_products_dataset'[product_height_cm] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_products_dataset'[product_height_cm] ),
+        "Null Count",
+            COUNTROWS ( 'olist_products_dataset' )
+                - COUNT ( 'olist_products_dataset'[product_height_cm] ),
+        "Min", MIN ( 'olist_products_dataset'[product_height_cm] ),
+        "Max", MAX ( 'olist_products_dataset'[product_height_cm] ),
+        "Median", MEDIAN ( 'olist_products_dataset'[product_height_cm] ),
+        "Mean", AVERAGE ( 'olist_products_dataset'[product_height_cm] ),
+        "Standard Deviation", STDEV.P ( 'olist_products_dataset'[product_height_cm] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        'olist_products_dataset'[product_height_cm] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_height_cm], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_height_cm], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_products_dataset'[product_height_cm], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_products_dataset'[product_height_cm], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_products_dataset",
+        "Column", "product_width_cm",
+        "Count", COUNT ( 'olist_products_dataset'[product_width_cm] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_products_dataset'[product_width_cm] ),
+        "Null Count",
+            COUNTROWS ( 'olist_products_dataset' )
+                - COUNT ( 'olist_products_dataset'[product_width_cm] ),
+        "Min", MIN ( 'olist_products_dataset'[product_width_cm] ),
+        "Max", MAX ( 'olist_products_dataset'[product_width_cm] ),
+        "Median", MEDIAN ( 'olist_products_dataset'[product_width_cm] ),
+        "Mean", AVERAGE ( 'olist_products_dataset'[product_width_cm] ),
+        "Standard Deviation", STDEV.P ( 'olist_products_dataset'[product_width_cm] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        'olist_products_dataset'[product_width_cm] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_width_cm], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_products_dataset',
+                        MOD ( 'olist_products_dataset'[product_width_cm], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_products_dataset'[product_width_cm], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_products_dataset'[product_width_cm], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    )
+)
+
+
+// Lista kategorii
+// Brak w słowniku: '', 'pc_gamer', 'portateis_cozinha_e_preparadores_de_alimentos'
+EVALUATE
+DISTINCT ( olist_products_dataset[product_category_name] )
+

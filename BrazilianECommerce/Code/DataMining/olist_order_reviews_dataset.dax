@@ -1,0 +1,236 @@
+﻿
+
+// Statystyki kolumn
+EVALUATE
+UNION (
+    ROW (
+        "Table", "olist_order_reviews_dataset",
+        "Column", "review_id",
+        "Count", COUNT ( 'olist_order_reviews_dataset'[review_id] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_reviews_dataset'[review_id] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_reviews_dataset' )
+                - COUNT ( 'olist_order_reviews_dataset'[review_id] ),
+        "Min", MIN ( 'olist_order_reviews_dataset'[review_id] ),
+        "Max", MAX ( 'olist_order_reviews_dataset'[review_id] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_order_reviews_dataset",
+        "Column", "order_id",
+        "Count", COUNT ( 'olist_order_reviews_dataset'[order_id] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_reviews_dataset'[order_id] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_reviews_dataset' )
+                - COUNT ( 'olist_order_reviews_dataset'[order_id] ),
+        "Min", MIN ( 'olist_order_reviews_dataset'[order_id] ),
+        "Max", MAX ( 'olist_order_reviews_dataset'[order_id] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_order_reviews_dataset",
+        "Column", "review_score",
+        "Count", COUNT ( 'olist_order_reviews_dataset'[review_score] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_reviews_dataset'[review_score] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_reviews_dataset' )
+                - COUNT ( 'olist_order_reviews_dataset'[review_score] ),
+        "Min", MIN ( 'olist_order_reviews_dataset'[review_score] ),
+        "Max", MAX ( 'olist_order_reviews_dataset'[review_score] ),
+        "Median", MEDIAN ( 'olist_order_reviews_dataset'[review_score] ),
+        "Mean", AVERAGE ( 'olist_order_reviews_dataset'[review_score] ),
+        "Standard Deviation", STDEV.P ( 'olist_order_reviews_dataset'[review_score] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_reviews_dataset',
+                        'olist_order_reviews_dataset'[review_score] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_reviews_dataset',
+                        MOD ( 'olist_order_reviews_dataset'[review_score], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_reviews_dataset',
+                        MOD ( 'olist_order_reviews_dataset'[review_score], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_order_reviews_dataset'[review_score], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_order_reviews_dataset'[review_score], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_order_reviews_dataset",
+        "Column", "review_comment_title",
+        "Count", COUNT ( 'olist_order_reviews_dataset'[review_comment_title] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_reviews_dataset'[review_comment_title] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_reviews_dataset' )
+                - COUNT ( 'olist_order_reviews_dataset'[review_comment_title] ),
+        "Min", MIN ( 'olist_order_reviews_dataset'[review_comment_title] ),
+        "Max", MAX ( 'olist_order_reviews_dataset'[review_comment_title] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_order_reviews_dataset",
+        "Column", "review_comment_message",
+        "Count", COUNT ( 'olist_order_reviews_dataset'[review_comment_message] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_reviews_dataset'[review_comment_message] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_reviews_dataset' )
+                - COUNT ( 'olist_order_reviews_dataset'[review_comment_message] ),
+        "Min", MIN ( 'olist_order_reviews_dataset'[review_comment_message] ),
+        "Max", MAX ( 'olist_order_reviews_dataset'[review_comment_message] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_order_reviews_dataset",
+        "Column", "review_creation_date",
+        "Count", COUNT ( 'olist_order_reviews_dataset'[review_creation_date] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_reviews_dataset'[review_creation_date] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_reviews_dataset' )
+                - COUNT ( 'olist_order_reviews_dataset'[review_creation_date] ),
+        "Min", MIN ( 'olist_order_reviews_dataset'[review_creation_date] ),
+        "Max", MAX ( 'olist_order_reviews_dataset'[review_creation_date] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_reviews_dataset',
+                        'olist_order_reviews_dataset'[review_creation_date] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days",
+            DATEDIFF (
+                MIN ( 'olist_order_reviews_dataset'[review_creation_date] ),
+                MAX ( 'olist_order_reviews_dataset'[review_creation_date] ),
+                DAY
+            ),
+        "Range in Months",
+            DATEDIFF (
+                MIN ( 'olist_order_reviews_dataset'[review_creation_date] ),
+                MAX ( 'olist_order_reviews_dataset'[review_creation_date] ),
+                MONTH
+            ),
+        "Range in Years",
+            DATEDIFF (
+                MIN ( 'olist_order_reviews_dataset'[review_creation_date] ),
+                MAX ( 'olist_order_reviews_dataset'[review_creation_date] ),
+                YEAR
+            )
+    ),
+    ROW (
+        "Table", "olist_order_reviews_dataset",
+        "Column", "review_answer_timestamp",
+        "Count", COUNT ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+        "Null Count",
+            COUNTROWS ( 'olist_order_reviews_dataset' )
+                - COUNT ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+        "Min", MIN ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+        "Max", MAX ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_order_reviews_dataset',
+                        'olist_order_reviews_dataset'[review_answer_timestamp] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days",
+            DATEDIFF (
+                MIN ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+                MAX ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+                DAY
+            ),
+        "Range in Months",
+            DATEDIFF (
+                MIN ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+                MAX ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+                MONTH
+            ),
+        "Range in Years",
+            DATEDIFF (
+                MIN ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+                MAX ( 'olist_order_reviews_dataset'[review_answer_timestamp] ),
+                YEAR
+            )
+    )
+)
+

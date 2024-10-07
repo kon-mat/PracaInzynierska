@@ -1,0 +1,169 @@
+﻿
+
+// Statystyki kolumn
+EVALUATE
+UNION (
+    ROW (
+        "Table", "olist_sellers_dataset",
+        "Column", "seller_id",
+        "Count", COUNT ( 'olist_sellers_dataset'[seller_id] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_sellers_dataset'[seller_id] ),
+        "Null Count",
+            COUNTROWS ( 'olist_sellers_dataset' )
+                - COUNT ( 'olist_sellers_dataset'[seller_id] ),
+        "Min", MIN ( 'olist_sellers_dataset'[seller_id] ),
+        "Max", MAX ( 'olist_sellers_dataset'[seller_id] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_sellers_dataset",
+        "Column", "seller_zip_code_prefix",
+        "Count", COUNT ( 'olist_sellers_dataset'[seller_zip_code_prefix] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_sellers_dataset'[seller_zip_code_prefix] ),
+        "Null Count",
+            COUNTROWS ( 'olist_sellers_dataset' )
+                - COUNT ( 'olist_sellers_dataset'[seller_zip_code_prefix] ),
+        "Min", MIN ( 'olist_sellers_dataset'[seller_zip_code_prefix] ),
+        "Max", MAX ( 'olist_sellers_dataset'[seller_zip_code_prefix] ),
+        "Median", MEDIAN ( 'olist_sellers_dataset'[seller_zip_code_prefix] ),
+        "Mean", AVERAGE ( 'olist_sellers_dataset'[seller_zip_code_prefix] ),
+        "Standard Deviation", STDEV.P ( 'olist_sellers_dataset'[seller_zip_code_prefix] ),
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_sellers_dataset',
+                        'olist_sellers_dataset'[seller_zip_code_prefix] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_sellers_dataset',
+                        MOD ( 'olist_sellers_dataset'[seller_zip_code_prefix], 2 ) = 0
+                    )
+                ),
+                0
+            ),
+        "Odds",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_sellers_dataset',
+                        MOD ( 'olist_sellers_dataset'[seller_zip_code_prefix], 2 ) <> 0
+                    )
+                ),
+                0
+            ),
+        "P25", PERCENTILE.INC ( 'olist_sellers_dataset'[seller_zip_code_prefix], 0.25 ),
+        "P75", PERCENTILE.INC ( 'olist_sellers_dataset'[seller_zip_code_prefix], 0.75 ),
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_sellers_dataset",
+        "Column", "seller_city",
+        "Count", COUNT ( 'olist_sellers_dataset'[seller_city] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_sellers_dataset'[seller_city] ),
+        "Null Count",
+            COUNTROWS ( 'olist_sellers_dataset' )
+                - COUNT ( 'olist_sellers_dataset'[seller_city] ),
+        "Min", MIN ( 'olist_sellers_dataset'[seller_city] ),
+        "Max", MAX ( 'olist_sellers_dataset'[seller_city] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_sellers_dataset",
+        "Column", "seller_state",
+        "Count", COUNT ( 'olist_sellers_dataset'[seller_state] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_sellers_dataset'[seller_state] ),
+        "Null Count",
+            COUNTROWS ( 'olist_sellers_dataset' )
+                - COUNT ( 'olist_sellers_dataset'[seller_state] ),
+        "Min", MIN ( 'olist_sellers_dataset'[seller_state] ),
+        "Max", MAX ( 'olist_sellers_dataset'[seller_state] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    )
+)
+
+
+// Weryfikacja czy wartości seller_city i seller_state są unikalne dla poszczególnych seller_zip_code_prefix
+// 49 kodów powtarzających się ze względu na inny zapis w seller_city
+EVALUATE
+VAR UniqueValues =
+    SUMMARIZE (
+        olist_sellers_dataset,
+        olist_sellers_dataset[seller_zip_code_prefix],
+        olist_sellers_dataset[seller_city],
+        olist_sellers_dataset[seller_state]
+    )
+VAR Result =
+    ADDCOLUMNS (
+        UniqueValues,
+        "Zip Code Count",
+            VAR CurrentZipCode = [seller_zip_code_prefix]
+            RETURN
+                CALCULATE (
+                    COUNTROWS ( FILTER ( UniqueValues, [seller_zip_code_prefix] = CurrentZipCode ) )
+                )
+    )
+RETURN
+    Result
+    
+
+// Weryfikacja czy wartosci seller_state są unikalne dla poszczegolnych seller_city
+// 23 miasta powtarzające się ze względu na więcej kodów seller_state
+EVALUATE
+VAR UniqueValues =
+    SUMMARIZE (
+        olist_sellers_dataset,
+        olist_sellers_dataset[seller_city],
+        olist_sellers_dataset[seller_state]
+    )
+VAR Result =
+    ADDCOLUMNS (
+        UniqueValues,
+        "Customer City Count",
+            VAR CurrentCustomerCity = [seller_city]
+            RETURN
+                CALCULATE (
+                    COUNTROWS ( FILTER ( UniqueValues, [seller_city] = CurrentCustomerCity ) )
+                )
+    )
+RETURN
+    Result
+

@@ -1,0 +1,305 @@
+﻿
+
+// Statystyki kolumn
+EVALUATE
+UNION (
+    ROW (
+        "Table", "olist_orders_dataset",
+        "Column", "order_id",
+        "Count", COUNT ( 'olist_orders_dataset'[order_id] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_orders_dataset'[order_id] ),
+        "Null Count",
+            COUNTROWS ( 'olist_orders_dataset' )
+                - COUNT ( 'olist_orders_dataset'[order_id] ),
+        "Min", MIN ( 'olist_orders_dataset'[order_id] ),
+        "Max", MAX ( 'olist_orders_dataset'[order_id] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_orders_dataset",
+        "Column", "customer_id",
+        "Count", COUNT ( 'olist_orders_dataset'[customer_id] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_orders_dataset'[customer_id] ),
+        "Null Count",
+            COUNTROWS ( 'olist_orders_dataset' )
+                - COUNT ( 'olist_orders_dataset'[customer_id] ),
+        "Min", MIN ( 'olist_orders_dataset'[customer_id] ),
+        "Max", MAX ( 'olist_orders_dataset'[customer_id] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_orders_dataset",
+        "Column", "order_status",
+        "Count", COUNT ( 'olist_orders_dataset'[order_status] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_orders_dataset'[order_status] ),
+        "Null Count",
+            COUNTROWS ( 'olist_orders_dataset' )
+                - COUNT ( 'olist_orders_dataset'[order_status] ),
+        "Min", MIN ( 'olist_orders_dataset'[order_status] ),
+        "Max", MAX ( 'olist_orders_dataset'[order_status] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros", "N/A",
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days", "N/A",
+        "Range in Months", "N/A",
+        "Range in Years", "N/A"
+    ),
+    ROW (
+        "Table", "olist_orders_dataset",
+        "Column", "order_purchase_timestamp",
+        "Count", COUNT ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+        "Null Count",
+            COUNTROWS ( 'olist_orders_dataset' )
+                - COUNT ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+        "Min", MIN ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+        "Max", MAX ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_orders_dataset',
+                        'olist_orders_dataset'[order_purchase_timestamp] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+                MAX ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+                DAY
+            ),
+        "Range in Months",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+                MAX ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+                MONTH
+            ),
+        "Range in Years",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+                MAX ( 'olist_orders_dataset'[order_purchase_timestamp] ),
+                YEAR
+            )
+    ),
+    ROW (
+        "Table", "olist_orders_dataset",
+        "Column", "order_approved_at",
+        "Count", COUNT ( 'olist_orders_dataset'[order_approved_at] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_orders_dataset'[order_approved_at] ),
+        "Null Count",
+            COUNTROWS ( 'olist_orders_dataset' )
+                - COUNT ( 'olist_orders_dataset'[order_approved_at] ),
+        "Min", MIN ( 'olist_orders_dataset'[order_approved_at] ),
+        "Max", MAX ( 'olist_orders_dataset'[order_approved_at] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER ( 'olist_orders_dataset', 'olist_orders_dataset'[order_approved_at] = 0 )
+                ),
+                0
+            ),
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_approved_at] ),
+                MAX ( 'olist_orders_dataset'[order_approved_at] ),
+                DAY
+            ),
+        "Range in Months",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_approved_at] ),
+                MAX ( 'olist_orders_dataset'[order_approved_at] ),
+                MONTH
+            ),
+        "Range in Years",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_approved_at] ),
+                MAX ( 'olist_orders_dataset'[order_approved_at] ),
+                YEAR
+            )
+    ),
+    ROW (
+        "Table", "olist_orders_dataset",
+        "Column", "order_delivered_carrier_date",
+        "Count", COUNT ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+        "Null Count",
+            COUNTROWS ( 'olist_orders_dataset' )
+                - COUNT ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+        "Min", MIN ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+        "Max", MAX ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_orders_dataset',
+                        'olist_orders_dataset'[order_delivered_carrier_date] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+                MAX ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+                DAY
+            ),
+        "Range in Months",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+                MAX ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+                MONTH
+            ),
+        "Range in Years",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+                MAX ( 'olist_orders_dataset'[order_delivered_carrier_date] ),
+                YEAR
+            )
+    ),
+    ROW (
+        "Table", "olist_orders_dataset",
+        "Column", "order_delivered_customer_date",
+        "Count", COUNT ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+        "Null Count",
+            COUNTROWS ( 'olist_orders_dataset' )
+                - COUNT ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+        "Min", MIN ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+        "Max", MAX ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_orders_dataset',
+                        'olist_orders_dataset'[order_delivered_customer_date] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+                MAX ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+                DAY
+            ),
+        "Range in Months",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+                MAX ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+                MONTH
+            ),
+        "Range in Years",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+                MAX ( 'olist_orders_dataset'[order_delivered_customer_date] ),
+                YEAR
+            )
+    ),
+    ROW (
+        "Table", "olist_orders_dataset",
+        "Column", "order_estimated_delivery_date",
+        "Count", COUNT ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+        "Distinct Values", DISTINCTCOUNTNOBLANK ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+        "Null Count",
+            COUNTROWS ( 'olist_orders_dataset' )
+                - COUNT ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+        "Min", MIN ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+        "Max", MAX ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+        "Median", "N/A",
+        "Mean", "N/A",
+        "Standard Deviation", "N/A",
+        "Zeros",
+            COALESCE (
+                COUNTROWS (
+                    FILTER (
+                        'olist_orders_dataset',
+                        'olist_orders_dataset'[order_estimated_delivery_date] = 0
+                    )
+                ),
+                0
+            ),
+        "Evens", "N/A",
+        "Odds", "N/A",
+        "P25", "N/A",
+        "P75", "N/A",
+        "Range in Days",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+                MAX ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+                DAY
+            ),
+        "Range in Months",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+                MAX ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+                MONTH
+            ),
+        "Range in Years",
+            DATEDIFF (
+                MIN ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+                MAX ( 'olist_orders_dataset'[order_estimated_delivery_date] ),
+                YEAR
+            )
+    )
+)
+
+
+// Lista statusów
+EVALUATE
+DISTINCT(olist_orders_dataset[order_status])
+
