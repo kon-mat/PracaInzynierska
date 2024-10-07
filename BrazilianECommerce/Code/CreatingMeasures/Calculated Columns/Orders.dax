@@ -1,0 +1,2 @@
+﻿Revenue = 
+Orders[Price] + Orders[Freight Value]

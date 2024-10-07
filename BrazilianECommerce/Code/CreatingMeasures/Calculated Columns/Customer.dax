@@ -1,0 +1,44 @@
+﻿R Value = 
+[Recency (R)]
+
+F Value = 
+[Frequency (F)]
+
+M Value = 
+[Monetary (M)]
+
+R Score = 
+SWITCH (
+    TRUE (),
+    Customer[R Value] <= PERCENTILE.INC ( Customer[R Value], 0.20 ), 5,
+    Customer[R Value] <= PERCENTILE.INC ( Customer[R Value], 0.40 ), 4,
+    Customer[R Value] <= PERCENTILE.INC ( Customer[R Value], 0.60 ), 3,
+    Customer[R Value] <= PERCENTILE.INC ( Customer[R Value], 0.80 ), 2,
+    1
+)
+
+F Score = 
+SWITCH (
+    TRUE (),
+    Customer[F Value] <= PERCENTILE.INC ( Customer[F Value], 0.20 ), 1,
+    Customer[F Value] <= PERCENTILE.INC ( Customer[F Value], 0.40 ), 2,
+    Customer[F Value] <= PERCENTILE.INC ( Customer[F Value], 0.60 ), 3,
+    Customer[F Value] <= PERCENTILE.INC ( Customer[F Value], 0.80 ), 4,
+    5
+)
+
+M Score = 
+SWITCH (
+    TRUE (),
+    Customer[M Value] <= PERCENTILE.INC ( Customer[M Value], 0.20 ), 1,
+    Customer[M Value] <= PERCENTILE.INC ( Customer[M Value], 0.40 ), 2,
+    Customer[M Value] <= PERCENTILE.INC ( Customer[M Value], 0.60 ), 3,
+    Customer[M Value] <= PERCENTILE.INC ( Customer[M Value], 0.80 ), 4,
+    5
+)
+
+RFM = 
+Customer[R Score] & Customer[F Score] & Customer[M Score]
+
+Customer Lifespan = 
+DATEDIFF ( Customer[First Transaction Date], [Last Transaction Date], MONTH ) + 1

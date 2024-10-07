@@ -1,0 +1,343 @@
+﻿'Measure'[% Of Single Orders] = 
+DIVIDE ( [Total Single Orders], [Total Orders] )
+
+'Measure'[Active Customers] = 
+CALCULATE (
+    DISTINCTCOUNT ( 'Order'[Customer Unique Id] ),
+    KEEPFILTERS ( Orders )
+)
+
+'Measure'[Average Approval Time] = 
+VAR __AvgSeconds = [Average Approval Time (sec)]
+VAR __Days =
+    QUOTIENT ( __AvgSeconds, 86400 )
+VAR __Hours =
+    QUOTIENT ( MOD ( __AvgSeconds, 86400 ), 3600 )
+VAR __Minutes =
+    QUOTIENT ( MOD ( __AvgSeconds, 3600 ), 60 )
+VAR __Seconds =
+    MOD ( __AvgSeconds, 60 )
+VAR __ApprovalTimeString =
+    IF ( __Days > 0, __Days & IF ( __Days = 1, " day, ", " days, " ), "" )
+        & FORMAT ( __Hours, "00" ) & ":"
+        & FORMAT ( __Minutes, "00" ) & ":"
+        & FORMAT ( __Seconds, "00" )
+VAR __Result =
+    IF (
+        COUNT ( 'Order'[Order Id] ) > 0,
+        IF ( __AvgSeconds > 0, __ApprovalTimeString, "None" ),
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Measure'[Average Approval Time (h)] = 
+CALCULATE ( AVERAGE ( 'Order'[Approval Time (h)] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Average Approval Time (sec)] = 
+CALCULATE ( AVERAGE ( 'Order'[Approval Time (sec)] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Average Carrier Delivery Time] = 
+VAR __AvgSeconds = [Average Carrier Delivery Time (sec)]
+VAR __Days =
+    QUOTIENT ( __AvgSeconds, 86400 )
+VAR __Hours =
+    QUOTIENT ( MOD ( __AvgSeconds, 86400 ), 3600 )
+VAR __Minutes =
+    QUOTIENT ( MOD ( __AvgSeconds, 3600 ), 60 )
+VAR __Seconds =
+    MOD ( __AvgSeconds, 60 )
+VAR __ApprovalTimeString =
+    IF ( __Days > 0, __Days & IF ( __Days = 1, " day, ", " days, " ), "" )
+        & FORMAT ( __Hours, "00" ) & ":"
+        & FORMAT ( __Minutes, "00" ) & ":"
+        & FORMAT ( __Seconds, "00" )
+VAR __Result =
+    IF (
+        COUNT ( 'Order'[Order Id] ) > 0,
+        IF ( __AvgSeconds > 0, __ApprovalTimeString, "None" ),
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Measure'[Average Carrier Delivery Time (h)] = 
+CALCULATE (
+    AVERAGE ( 'Order'[Carrier Delivery Time (h)] ),
+    KEEPFILTERS ( Orders )
+)
+
+'Measure'[Average Carrier Delivery Time (sec)] = 
+CALCULATE (
+    AVERAGE ( 'Order'[Carrier Delivery Time (sec)] ),
+    KEEPFILTERS ( Orders )
+)
+
+'Measure'[Average Customer Delivery Time] = 
+VAR __AvgSeconds = [Average Customer Delivery Time (sec)]
+VAR __Days =
+    QUOTIENT ( __AvgSeconds, 86400 )
+VAR __Hours =
+    QUOTIENT ( MOD ( __AvgSeconds, 86400 ), 3600 )
+VAR __Minutes =
+    QUOTIENT ( MOD ( __AvgSeconds, 3600 ), 60 )
+VAR __Seconds =
+    MOD ( __AvgSeconds, 60 )
+VAR __ApprovalTimeString =
+    IF ( __Days > 0, __Days & IF ( __Days = 1, " day, ", " days, " ), "" )
+        & FORMAT ( __Hours, "00" ) & ":"
+        & FORMAT ( __Minutes, "00" ) & ":"
+        & FORMAT ( __Seconds, "00" )
+VAR __Result =
+    IF (
+        COUNT ( 'Order'[Order Id] ) > 0,
+        IF ( __AvgSeconds > 0, __ApprovalTimeString, "None" ),
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Measure'[Average Customer Delivery Time (h)] = 
+CALCULATE (
+    AVERAGE ( 'Order'[Customer Delivery Time (h)] ),
+    KEEPFILTERS ( Orders )
+)
+
+'Measure'[Average Customer Delivery Time (sec)] = 
+CALCULATE (
+    AVERAGE ( 'Order'[Customer Delivery Time (sec)] ),
+    KEEPFILTERS ( Orders )
+)
+
+'Measure'[Average Order Cancellation Rate] = 
+DIVIDE ( [Total Orders Canceled], [Total Orders] )
+
+'Measure'[Average Order Freight Value] = 
+DIVIDE ( [Total Freight Value], [Total Orders] )
+
+'Measure'[Average Order Value (AOV)] = 
+DIVIDE ( [Total Revenue (Payments)], [Total Orders Delivered] )
+
+'Measure'[Average Product Photos Quantity] = 
+CALCULATE ( AVERAGE ( 'Product'[Photos Quantity] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Average Product Price] = 
+AVERAGE ( Orders[Price] )
+
+'Measure'[Average Product Volume] = 
+CALCULATE ( AVERAGE ( 'Product'[Volume (dm3)] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Average Total Delivery Time] = 
+VAR __AvgSeconds = [Average Total Delivery Time (sec)]
+VAR __Days =
+    QUOTIENT ( __AvgSeconds, 86400 )
+VAR __Hours =
+    QUOTIENT ( MOD ( __AvgSeconds, 86400 ), 3600 )
+VAR __Minutes =
+    QUOTIENT ( MOD ( __AvgSeconds, 3600 ), 60 )
+VAR __Seconds =
+    MOD ( __AvgSeconds, 60 )
+VAR __ApprovalTimeString =
+    IF ( __Days > 0, __Days & IF ( __Days = 1, " day, ", " days, " ), "" )
+        & FORMAT ( __Hours, "00" ) & ":"
+        & FORMAT ( __Minutes, "00" ) & ":"
+        & FORMAT ( __Seconds, "00" )
+VAR __Result =
+    IF (
+        COUNT ( 'Order'[Order Id] ) > 0,
+        IF ( __AvgSeconds > 0, __ApprovalTimeString, "None" ),
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Measure'[Average Total Delivery Time (h)] = 
+CALCULATE (
+    AVERAGE ( 'Order'[Total Delivery Time (h)] ),
+    KEEPFILTERS ( Orders )
+)
+
+'Measure'[Average Total Delivery Time (sec)] = 
+CALCULATE (
+    AVERAGE ( 'Order'[Total Delivery Time (sec)] ),
+    KEEPFILTERS ( Orders )
+)
+
+'Measure'[Churn Rate] = 
+DIVIDE ( [Churned Customers], [New Customers] )
+
+'Measure'[Churned Customers] = 
+SWITCH (
+    TRUE (),
+    ISBLANK ( [Retention Rate] ), BLANK (),
+    [New Customers] - [Cohort Performance]
+)
+
+'Measure'[Cohort Performance] = 
+VAR __MinDate =
+    MIN ( Calendar[Start of Month] )
+VAR __MaxDate =
+    MAX ( Calendar[Start of Month] )
+VAR __Performance =
+    CALCULATE (
+        [Active Customers],
+        REMOVEFILTERS ( Calendar[Start of Month] ),
+        REMOVEFILTERS ( Calendar[Month Year] ),
+        RELATEDTABLE ( Customer ),
+        Customer[First Transaction Date] >= __MinDate
+            && Customer[First Transaction Date] <= __MaxDate
+    )
+VAR __MonthsAfter =
+    CALCULATE (
+        SELECTEDVALUE ( 'Order'[Months Since First Transaction] ),
+        REMOVEFILTERS ( Calendar[Start of Month] ),
+        REMOVEFILTERS ( Calendar[Month Year] )
+    )
+VAR __MonthsAfterLimit =
+    DATEDIFF ( __MinDate, [End Date], MONTH )
+VAR __Result =
+    IF ( __MonthsAfterLimit > __MonthsAfter, __Performance + 0, BLANK () )
+RETURN
+    __Result
+
+'Measure'[Customer Lifespan (CL)] = 
+CALCULATE ( AVERAGE ( Customer[Customer Lifespan] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Customer Lifetime Value (CLV)] = 
+[Purchase Frequency (PF)] * [Average Order Value (AOV)] * [Gross Margin (GS)] * [Customer Lifespan (CL)]
+
+'Measure'[End Date] = 
+DATE ( 2018, 10, 18 )
+
+'Measure'[Frequency (F)] = 
+DISTINCTCOUNT ( 'Order'[Order Id] )
+
+'Measure'[Gross Margin (GS)] = 
+0.15
+
+'Measure'[Items Per Order] = 
+DIVIDE ( [Total Ordered Products], [Total Orders] )
+
+'Measure'[Last Transaction Date] = 
+MAXX (
+    FILTER (
+        'Order',
+        'Order'[Customer Unique Id] = RELATED ( Customer[Customer Unique Id] )
+    ),
+    'Order'[Purchase Date]
+)
+
+'Measure'[Lost Customers] = 
+VAR __CustomersThisMonth =
+    VALUES ( 'Order'[Customer Unique Id] )
+VAR __CustomersLastMonth =
+    CALCULATETABLE (
+        VALUES ( 'Order'[Customer Unique Id] ),
+        PREVIOUSMONTH ( Calendar[Start of Month] )
+    )
+VAR __LostCustomers =
+    EXCEPT ( __CustomersLastMonth, __CustomersThisMonth )
+VAR __Result =
+    COUNTROWS ( __LostCustomers )
+RETURN
+    __Result
+
+'Measure'[Monetary (M)] = 
+SUM ( Orders[Revenue] )
+
+'Measure'[New Customers] = 
+CALCULATE ( [Active Customers], 'Order'[Months Since First Transaction] = 0 )
+
+'Measure'[On-Time Delivery Rate] = 
+DIVIDE ( [Total Orders Delivered On-Time], [Total Orders Delivered] )
+
+'Measure'[Product Sellers] = 
+CALCULATE ( DISTINCTCOUNT ( Seller[Seller Id] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Purchase Frequency (PF)] = 
+CALCULATE ( AVERAGE ( Customer[F Value] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Recency (R)] = 
+DATEDIFF ( [Last Transaction Date], [End Date], DAY )
+
+'Measure'[Resurrected Customers] = 
+VAR __CustomersThisMonth =
+    VALUES ( 'Order'[Customer Unique Id] )
+VAR __CustomersLastMonth =
+    CALCULATETABLE (
+        VALUES ( 'Order'[Customer Unique Id] ),
+        PREVIOUSMONTH ( Calendar[Start of Month] )
+    )
+VAR __NewCustomers =
+    CALCULATETABLE (
+        VALUES ( 'Order'[Customer Unique Id] ),
+        'Order'[Months Since First Transaction] = 0
+    )
+VAR __ResurrectedCustomers =
+    EXCEPT (
+        -- remove last month's customers
+        EXCEPT (
+            __CustomersThisMonth,
+            __CustomersLastMonth
+        ),
+        -- remove new customers
+        __NewCustomers
+    )
+VAR __Result =
+    COUNTROWS ( __ResurrectedCustomers )
+RETURN
+    __Result
+
+'Measure'[Retention Rate] = 
+DIVIDE ( [Cohort Performance], [New Customers] )
+
+'Measure'[Total Categories] = 
+CALCULATE ( DISTINCTCOUNT ( Category[Category Id] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Total Customers] = 
+CALCULATE (
+    DISTINCTCOUNT ( Customer[Customer Unique Id] ),
+    KEEPFILTERS ( Orders )
+)
+
+'Measure'[Total Freight Value] = 
+SUM ( Orders[Freight Value] )
+
+'Measure'[Total Ordered Products] = 
+COUNT ( Orders[Product Id] )
+
+'Measure'[Total Orders] = 
+CALCULATE ( DISTINCTCOUNT ( 'Order'[Order Id] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Total Orders Canceled] = 
+CALCULATE (
+    [Total Orders],
+    KEEPFILTERS ( 'Order Status'[Status] = "canceled" )
+)
+
+'Measure'[Total Orders Delivered] = 
+CALCULATE (
+    [Total Orders],
+    KEEPFILTERS ( 'Order Status'[Status] = "delivered" )
+)
+
+'Measure'[Total Orders Delivered (Payments)] = 
+CALCULATE ( [Total Orders Delivered], KEEPFILTERS ( Payments ) )
+
+'Measure'[Total Orders Delivered On-Time] = 
+CALCULATE ( [Total Orders Delivered], 'Order'[Delivery Estimated] = 1 )
+
+'Measure'[Total Products] = 
+CALCULATE ( DISTINCTCOUNT ( 'Product'[Product Id] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Total Revenue] = 
+CALCULATE ( SUM ( Orders[Revenue] ), 'Order Status'[Status] = "delivered" )
+
+'Measure'[Total Revenue (Payments)] = 
+CALCULATE ( [Total Revenue], KEEPFILTERS ( Payments ) )
+
+'Measure'[Total Sellers] = 
+CALCULATE ( DISTINCTCOUNT ( Seller[Seller Id] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Total Single Orders] = 
+CALCULATE ( [Total Orders], 'Order'[Single Order] = 1 )

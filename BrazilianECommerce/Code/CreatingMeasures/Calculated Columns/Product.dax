@@ -1,0 +1,2 @@
+﻿Volume (dm3) = 
+'Product'[Length (cm)] * 'Product'[Height (cm)] * 'Product'[Width (cm)] / 1000

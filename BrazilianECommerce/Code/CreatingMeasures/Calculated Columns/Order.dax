@@ -1,0 +1,91 @@
+﻿Approval Time (sec) = 
+VAR __StartDateTime = 'Order'[Purchase Date] + 'Order'[Purchase Time]
+VAR __EndDateTime = 'Order'[Approval Purchase Date] + 'Order'[Approval Purchase Time]
+VAR __Result =
+    DATEDIFF ( __StartDateTime, __EndDateTime, SECOND )
+RETURN
+    __Result
+
+Carrier Delivery Time (sec) = 
+VAR __StartDateTime = 'Order'[Approval Purchase Date] + 'Order'[Approval Purchase Time]
+VAR __EndDateTime = 'Order'[Carrier Delivery Date] + 'Order'[Carrier Delivery Time]
+VAR __Result =
+    DATEDIFF ( __StartDateTime, __EndDateTime, SECOND )
+RETURN
+    __Result
+
+Customer Delivery Time (sec) = 
+VAR __StartDateTime = 'Order'[Carrier Delivery Date] + 'Order'[Carrier Delivery Time]
+VAR __EndDateTime = 'Order'[Customer Delivery Date] + 'Order'[Customer Delivery Time]
+VAR __Result =
+    DATEDIFF ( __StartDateTime, __EndDateTime, SECOND )
+RETURN
+    __Result
+
+Total Delivery Time (sec) = 
+VAR __StartDateTime = 'Order'[Purchase Date] + 'Order'[Purchase Time]
+VAR __EndDateTime = 'Order'[Customer Delivery Date] + 'Order'[Customer Delivery Time]
+VAR __Result =
+    DATEDIFF ( __StartDateTime, __EndDateTime, SECOND )
+RETURN
+    __Result
+
+Approval Time (h) = 
+VAR __StartDateTime = 'Order'[Purchase Date] + 'Order'[Purchase Time]
+VAR __EndDateTime = 'Order'[Approval Purchase Date] + 'Order'[Approval Purchase Time]
+VAR __Result =
+    DATEDIFF ( __StartDateTime, __EndDateTime, HOUR )
+RETURN
+    __Result
+
+Carrier Delivery Time (h) = 
+VAR __StartDateTime = 'Order'[Approval Purchase Date] + 'Order'[Approval Purchase Time]
+VAR __EndDateTime = 'Order'[Carrier Delivery Date] + 'Order'[Carrier Delivery Time]
+VAR __Result =
+    DATEDIFF ( __StartDateTime, __EndDateTime, HOUR )
+RETURN
+    __Result
+
+Customer Delivery Time (h) = 
+VAR __StartDateTime = 'Order'[Carrier Delivery Date] + 'Order'[Carrier Delivery Time]
+VAR __EndDateTime = 'Order'[Customer Delivery Date] + 'Order'[Customer Delivery Time]
+VAR __Result =
+    DATEDIFF ( __StartDateTime, __EndDateTime, HOUR )
+RETURN
+    __Result
+
+Total Delivery Time (h) = 
+VAR __StartDateTime = 'Order'[Purchase Date] + 'Order'[Purchase Time]
+VAR __EndDateTime = 'Order'[Customer Delivery Date] + 'Order'[Customer Delivery Time]
+VAR __Result =
+    DATEDIFF ( __StartDateTime, __EndDateTime, HOUR )
+RETURN
+    __Result
+
+Delivery Estimated = 
+IF (
+    ISBLANK ( 'Order'[Customer Delivery Date] ),
+    BLANK (),
+    IF ( 'Order'[Customer Delivery Date] < 'Order'[Estimated Delivery Date], 1, 0 )
+)
+
+Single Order = 
+VAR __CurrentOrder = 'Order'[Order Id]
+VAR __ProductsInOrder =
+    CALCULATE ( COUNTROWS ( Orders ), 'Order'[Order Id] = __CurrentOrder )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        __ProductsInOrder > 1, 0,
+        __ProductsInOrder = 1, 1,
+        __ProductsInOrder < 1, BLANK ()
+    )
+RETURN
+    __Result
+
+Months Since First Transaction = 
+DATEDIFF (
+    RELATED ( Customer[First Transaction Date] ),
+    RELATED ( 'Calendar'[Start of Month] ),
+    MONTH
+)
