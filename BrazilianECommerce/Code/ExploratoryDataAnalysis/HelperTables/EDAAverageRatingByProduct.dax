@@ -1,0 +1,7 @@
+﻿EDA Average Rating By Product = 
+SUMMARIZE (
+    factOrderItems,
+    dimProduct[Product Id],
+    factOrderItems[Order Id],
+    "Rating", AVERAGEX ( RELATEDTABLE ( factReview ), factReview[Score] )
+)

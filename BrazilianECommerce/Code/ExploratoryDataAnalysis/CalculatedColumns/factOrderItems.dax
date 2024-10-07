@@ -1,0 +1,1 @@
+﻿Revenue = factOrderItems[Price] + factOrderItems[Freight Value]

@@ -1,0 +1,249 @@
+﻿measureEDA[% of All Customers] =
+DIVIDE ( [Total Customers], [All Customers] )
+
+measureEDA[% of All Sellers] =
+DIVIDE ( [Total Sellers], [All Sellers] )
+
+measureEDA[Active Sellers] =
+VAR StartDate =
+    DATEADD ( FIRSTDATE ( dimCalendar[Date] ), -1, MONTH )
+VAR EndDate =
+    LASTDATE ( dimCalendar[Date] )
+VAR Result =
+    CALCULATE (
+        [Total Sellers],
+        FILTER (
+            factOrderItems,
+            RELATED ( dimOrderStatus[Status] ) = "delivered"
+                && RELATED ( dimCalendar[Date] ) >= StartDate
+                && RELATED ( dimCalendar[Date] ) <= EndDate
+        )
+    )
+RETURN
+    Result
+
+measureEDA[All Customers] =
+CALCULATE ( [Total Customers], ALL ( dimCustomer ) )
+
+measureEDA[All Ordered Products] =
+CALCULATE ( [Total Ordered Products], ALL ( factOrderItems ) )
+
+measureEDA[All Orders] =
+CALCULATE ( [Total Orders], ALL ( dimOrder[Order Id] ) )
+
+measureEDA[All Orders Delivered] =
+CALCULATE (
+    [Total Orders Delivered TblItems],
+    FILTER (
+        ALL ( factOrderItems ),
+        RELATED ( dimOrderStatus[Status] ) = "delivered"
+    )
+)
+
+measureEDA[All Payments] =
+CALCULATE ( [Total Payments], ALL ( factOrderPayments ) )
+
+measureEDA[All Payments Value] =
+CALCULATE ( [Total Payment Value], ALL ( factOrderPayments ) )
+
+measureEDA[All Sales Value] =
+CALCULATE ( [Total Sales Value], ALL ( factOrderItems ) )
+
+measureEDA[All Sellers] =
+CALCULATE ( [Total Sellers], ALL ( dimSeller ) )
+
+measureEDA[AOV TblItems] =
+DIVIDE ( [Total Revenue TblPayments], [Total Orders Delivered TblItems] )
+
+measureEDA[AOV TblPayments] =
+DIVIDE ( [Total Revenue TblPayments], [Total Orders Delivered TblPayments] )
+
+measureEDA[Average Approval Time] =
+VAR AvgSeconds = [Average Approval Time Seconds]
+VAR Days =
+    QUOTIENT ( AvgSeconds, 86400 )
+VAR Hours =
+    QUOTIENT ( MOD ( AvgSeconds, 86400 ), 3600 )
+VAR Minutes =
+    QUOTIENT ( MOD ( AvgSeconds, 3600 ), 60 )
+VAR Seconds =
+    MOD ( AvgSeconds, 60 )
+VAR ApprovalTimeString =
+    IF ( Days > 0, Days & IF ( Days = 1, " day, ", " days, " ), "" )
+        & FORMAT ( Hours, "00" ) & ":"
+        & FORMAT ( Minutes, "00" ) & ":"
+        & FORMAT ( Seconds, "00" )
+VAR Result =
+    IF (
+        COUNT ( dimOrder[Order Id] ) > 0,
+        IF ( AvgSeconds > 0, ApprovalTimeString, "None" ),
+        BLANK ()
+    )
+RETURN
+    Result
+
+measureEDA[Average Approval Time Seconds] =
+AVERAGE ( dimOrder[Approval Time Seconds] )
+
+measureEDA[Average Carrier Delivery Time] =
+VAR AvgSeconds = [Average Carrier Delivery Time Seconds]
+VAR Days =
+    QUOTIENT ( AvgSeconds, 86400 )
+VAR Hours =
+    QUOTIENT ( MOD ( AvgSeconds, 86400 ), 3600 )
+VAR Minutes =
+    QUOTIENT ( MOD ( AvgSeconds, 3600 ), 60 )
+VAR Seconds =
+    MOD ( AvgSeconds, 60 )
+VAR ApprovalTimeString =
+    IF ( Days > 0, Days & IF ( Days = 1, " day, ", " days, " ), "" )
+        & FORMAT ( Hours, "00" ) & ":"
+        & FORMAT ( Minutes, "00" ) & ":"
+        & FORMAT ( Seconds, "00" )
+VAR Result =
+    IF (
+        COUNT ( dimOrder[Order Id] ) > 0,
+        IF ( AvgSeconds > 0, ApprovalTimeString, "None" ),
+        BLANK ()
+    )
+RETURN
+    Result
+
+measureEDA[Average Carrier Delivery Time Seconds] =
+AVERAGE ( dimOrder[Carrier Delivery Time Seconds] )
+
+measureEDA[Average Customer Delivery Time] =
+VAR AvgSeconds = [Average Customer Delivery Time Seconds]
+VAR Days =
+    QUOTIENT ( AvgSeconds, 86400 )
+VAR Hours =
+    QUOTIENT ( MOD ( AvgSeconds, 86400 ), 3600 )
+VAR Minutes =
+    QUOTIENT ( MOD ( AvgSeconds, 3600 ), 60 )
+VAR Seconds =
+    MOD ( AvgSeconds, 60 )
+VAR ApprovalTimeString =
+    IF ( Days > 0, Days & IF ( Days = 1, " day, ", " days, " ), "" )
+        & FORMAT ( Hours, "00" ) & ":"
+        & FORMAT ( Minutes, "00" ) & ":"
+        & FORMAT ( Seconds, "00" )
+VAR Result =
+    IF (
+        COUNT ( dimOrder[Order Id] ) > 0,
+        IF ( AvgSeconds > 0, ApprovalTimeString, "None" ),
+        BLANK ()
+    )
+RETURN
+    Result
+
+measureEDA[Average Customer Delivery Time Seconds] =
+AVERAGE ( dimOrder[Customer Delivery Time Seconds] )
+
+measureEDA[Average Order Cancellation Rate By Seller] =
+VAR CancelledOrders =
+    CALCULATE (
+        DISTINCTCOUNT ( dimOrder[Order Id] ),
+        KEEPFILTERS ( factOrderItems ),
+        dimOrderStatus[Status] = "canceled"
+    )
+VAR TotalOrdersBySeller =
+    CALCULATE (
+        DISTINCTCOUNT ( dimOrder[Order Id] ),
+        KEEPFILTERS ( factOrderItems )
+    )
+VAR Result =
+    DIVIDE ( CancelledOrders, TotalOrdersBySeller )
+RETURN
+    Result
+
+measureEDA[Average Rating] =
+AVERAGE ( factReview[Score] )
+
+measureEDA[Customer Retention Rate %] =
+DIVIDE ( [Repeat Purchase Customers], [Total Customers] )
+
+measureEDA[Estimated Delivery Accuracy] =
+VAR TotalDeliveries =
+    COUNT ( dimOrder[Delivery Estimated] )
+VAR EstimatedDeliveries =
+    CALCULATE (
+        COUNT ( dimOrder[Delivery Estimated] ),
+        dimOrder[Delivery Estimated] = 1
+    )
+VAR Result =
+    DIVIDE ( EstimatedDeliveries, TotalDeliveries )
+RETURN
+    Result
+
+measureEDA[Items Per Order] =
+DIVIDE ( [Total Ordered Products], [Total Orders] )
+
+measureEDA[Repeat Purchase Customers] =
+CALCULATE (
+    DISTINCTCOUNT ( dimCustomer[Customer Unique Id] ),
+    dimOrder[Repeat Purchase] = 1,
+    dimOrderStatus[Status] = "delivered"
+)
+
+measureEDA[Total Customers] =
+DISTINCTCOUNT ( dimCustomer[Customer Unique Id] )
+
+measureEDA[Total Ordered Products] =
+COUNT ( factOrderItems[Product Id] )
+
+measureEDA[Total Orders] =
+DISTINCTCOUNT ( dimOrder[Order Id] )
+
+measureEDA[Total Orders Delivered TblItems] =
+CALCULATE (
+    [Total Orders TblItems],
+    KEEPFILTERS ( dimOrderStatus[Status] = "delivered" )
+)
+
+measureEDA[Total Orders Delivered TblPayments] =
+CALCULATE (
+    [Total Orders TblPayments],
+    KEEPFILTERS ( dimOrderStatus[Status] = "delivered" )
+)
+
+measureEDA[Total Orders Delivered TblReviews] =
+CALCULATE (
+    [Total Orders TblReviews],
+    KEEPFILTERS ( dimOrderStatus[Status] = "delivered" )
+)
+
+measureEDA[Total Orders TblItems] =
+CALCULATE ( [Total Orders], KEEPFILTERS ( factOrderItems ) )
+
+measureEDA[Total Orders TblPayments] =
+CALCULATE ( [Total Orders], KEEPFILTERS ( factOrderPayments ) )
+
+measureEDA[Total Orders TblReviews] =
+CALCULATE ( [Total Orders], KEEPFILTERS ( factReview ) )
+
+measureEDA[Total Payment Value] =
+SUM ( factOrderPayments[Payment Value] )
+
+measureEDA[Total Payments] =
+COUNT ( factOrderPayments[Order Id] )
+
+measureEDA[Total Revenue] =
+CALCULATE (
+    SUM ( factOrderItems[Revenue] ),
+    dimOrderStatus[Status] = "delivered"
+)
+
+measureEDA[Total Revenue TblPayments] =
+CALCULATE ( [Total Revenue], KEEPFILTERS ( factOrderPayments ) )
+
+measureEDA[Total Revenue TblReviews] =
+CALCULATE ( [Total Revenue], KEEPFILTERS ( factReview ) )
+
+measureEDA[Total Sales Value] =
+SUM ( factOrderItems[Price] )
+
+measureEDA[Total Sellers] =
+DISTINCTCOUNT ( dimSeller[Seller Id] )
+
+measureEDA[Total Single Orders] =
+CALCULATE ( [Total Orders], dimOrder[Single Order] = 1 )

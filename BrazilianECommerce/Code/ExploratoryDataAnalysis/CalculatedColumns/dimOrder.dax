@@ -1,0 +1,178 @@
+﻿Purchase Hour = 
+ROUND (
+    HOUR (
+        dimOrder[Purchase Timestamp]
+    ),
+    0
+)
+
+Approval Time Seconds = 
+DATEDIFF(
+    dimOrder[Purchase Timestamp], 
+    dimOrder[Approval Purchase Timestamp], 
+    SECOND
+)
+
+Carrier Delivery Time Seconds = 
+DATEDIFF(
+    dimOrder[Approval Purchase Timestamp], 
+    dimOrder[Carrier Delivery Date], 
+    SECOND
+)
+
+Customer Delivery Time Seconds = 
+DATEDIFF(
+    dimOrder[Carrier Delivery Date], 
+    dimOrder[Customer Delivery Date],
+    SECOND
+)
+
+Delivery Hour = 
+ROUND (
+    HOUR (
+        dimOrder[Customer Delivery Date]
+    ),
+    0
+)
+
+Delivery Day = 
+IF (
+    ISBLANK(dimOrder[Customer Delivery Date]),
+    "None",    
+    FORMAT (
+        dimOrder[Customer Delivery Date],
+        "ddd"
+    )
+)
+
+Delivery Day Number = 
+IF (
+    ISBLANK(dimOrder[Customer Delivery Date]),
+    0,
+    WEEKDAY (
+        dimOrder[Customer Delivery Date],
+        2
+    )
+)
+
+Delivery Estimated = 
+IF (
+    ISBLANK (
+        dimOrder[Customer Delivery Date]
+    ),
+    BLANK (),
+    IF (
+        dimOrder[Customer Delivery Date] < dimOrder[Estimated Delivery Date],
+        1,
+        0
+    )
+)
+
+Single Order = 
+VAR CurrentOrder = dimOrder[Order Id]
+VAR ProductsInOrder =
+    CALCULATE (
+        COUNTROWS ( factOrderItems ),
+        factOrderItems[Order Id] = CurrentOrder
+    )
+VAR Result =
+    SWITCH (
+        TRUE (),
+        ProductsInOrder > 1, 0,
+        ProductsInOrder = 1, 1,
+        ProductsInOrder < 1, BLANK ()
+    )
+RETURN
+    Result
+    
+First Purchase = 
+VAR CurrentCustomer = RELATED(dimCustomer[Customer Unique Id])
+VAR CurrentPurchaseTimestamp = dimOrder[Purchase Timestamp]
+VAR CurrentOrder = dimOrder[Order Id]
+VAR PreviousPurchases = 
+    COUNTROWS(
+        FILTER(
+            dimOrder,
+            RELATED(dimCustomer[Customer Unique Id]) = CurrentCustomer
+                && dimOrder[Purchase Timestamp] < CurrentPurchaseTimestamp
+                && dimOrder[Order Id] <> CurrentOrder
+        )
+    )
+VAR Result = 
+    IF(
+        PreviousPurchases = 0,
+        1,
+        0
+    )
+RETURN
+    Result
+
+Repeat Purchase = 
+VAR CurrentCustomer = RELATED(dimCustomer[Customer Unique Id])
+VAR CurrentPurchaseTimestamp = dimOrder[Purchase Timestamp]
+VAR CurrentOrder = dimOrder[Order Id]
+VAR PreviousPurchases = 
+    COUNTROWS(
+        FILTER(
+            dimOrder,
+            RELATED(dimCustomer[Customer Unique Id]) = CurrentCustomer
+                && dimOrder[Purchase Timestamp] < CurrentPurchaseTimestamp
+                && dimOrder[Order Id] <> CurrentOrder
+        )
+    )
+VAR Result = 
+    IF(
+        PreviousPurchases >= 1,
+        1,
+        0
+    )
+RETURN
+    Result
+    
+Products Number = 
+VAR CurrentOrder = dimOrder[Order Id]
+VAR ProductsInOrder =
+    CALCULATE (
+        COUNTROWS ( factOrderItems ),
+        factOrderItems[Order Id] = CurrentOrder
+    )
+VAR Result =
+    SWITCH (
+        TRUE (),
+        ProductsInOrder < 7, FORMAT ( ProductsInOrder, "0" ),
+        ProductsInOrder >= 7
+            && ProductsInOrder <= 10, "7 to 10",
+        ProductsInOrder > 10, "Over 10"
+    )
+RETURN
+    Result
+
+Days To Delivery = 
+VAR DaysToDelivery =
+    ROUNDUP ( DIVIDE ( dimOrder[Carrier Delivery Time Seconds], 86400 ), 0 )
+VAR Result =
+    SWITCH(
+        TRUE(),
+        DaysToDelivery < 0, BLANK(),
+        DaysToDelivery = 0, "0",
+        DaysToDelivery > 0 && DaysToDelivery < 10, FORMAT(DaysToDelivery, "0"),
+        DaysToDelivery >= 10 && DaysToDelivery <= 20, "10 to 20",
+        DaysToDelivery > 20, "Over 20"
+    )
+RETURN
+    Result
+    
+Days To Delivery Sort = 
+VAR DaysToDelivery =
+    ROUNDUP ( DIVIDE ( dimOrder[Carrier Delivery Time Seconds], 86400 ), 0 )
+VAR Result =
+    SWITCH(
+        TRUE(),
+        DaysToDelivery < 0, -1,
+        DaysToDelivery == 0, 0,
+        DaysToDelivery > 0 && DaysToDelivery < 10, DaysToDelivery,
+        DaysToDelivery >= 10 && DaysToDelivery <= 20, 10,
+        DaysToDelivery > 20, 21
+    )
+RETURN
+    Result
