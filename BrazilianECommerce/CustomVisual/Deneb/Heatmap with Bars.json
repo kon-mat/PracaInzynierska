@@ -1,0 +1,140 @@
+{
+  "data": {
+    "name": "dataset"
+  },
+  "spacing": 15,
+  "bounds": "flush",
+  "config": {
+    "axis": {
+      "labelFont": "DIN",  // Ustawienie czcionki osi
+      "labelFontSize": 12,  // Ustawienie rozmiaru czcionki dla etykiet osi
+      "titleFont": "DIN",  // Ustawienie czcionki tytułu osi
+      "titleFontSize": 14   // Ustawienie rozmiaru czcionki dla tytułów osi
+    },
+    "text": {
+      "font": "DIN",  // Ustawienie czcionki dla tekstu w narzędziu tooltip
+      "fontSize": 12  // Ustawienie rozmiaru czcionki dla tekstu w tooltipach
+    },
+    "legend": {
+      "labelFont": "DIN",  // Ustawienie czcionki dla etykiet legendy
+      "labelFontSize": 12,  // Ustawienie rozmiaru czcionki dla etykiet legendy
+      "titleFont": "DIN",  // Ustawienie czcionki dla tytułu legendy
+      "titleFontSize": 14  // Ustawienie rozmiaru czcionki dla tytułu legendy
+    }
+  },
+  "vconcat": [
+    {
+      "width": 740,
+      "height": 90,
+      "mark": {
+        "type": "bar",
+        "stroke": null,
+        "cornerRadiusEnd": 2,
+        "tooltip": true,
+        "color": "#BACADE"
+      },
+      "encoding": {
+        "x": {
+          "field": "Delivery Hour",
+          "axis": null
+        },
+        "y": {
+          "field": "Total Orders",
+          "title": "Total Orders Delivered",
+          "aggregate": "sum",
+          "axis": null
+        }
+      }
+    },
+    {
+      "spacing": 15,
+      "bounds": "flush",
+      "hconcat": [
+        {
+          "width": 740,
+          "height": 200,
+          "mark": {
+            "type": "rect",
+            "stroke": "white",
+            "tooltip": true
+          },
+          "encoding": {
+            "y": {
+              "field": "Week Day",
+              "sort": {
+                "field": "Week Day Number",
+                "op": "min"
+              },
+              "type": "ordinal",
+              "title": "Week Day",
+              "axis": {
+                "domain": false,
+                "ticks": false,
+                "labels": true,
+                "labelAngle": 0,
+                "labelPadding": 5,
+                "labelFont": "DIN",  // Czcionka etykiet osi Y
+                "labelFontSize": 14  // Rozmiar czcionki etykiet osi Y
+              }
+            },
+            "x": {
+              "field": "Delivery Hour",
+              "type": "ordinal",
+              "title": "Hour",
+              "axis": {
+                "domain": false,
+                "ticks": false,
+                "labels": true,
+                "labelAngle": 0,
+                "labelFont": "DIN",  // Czcionka etykiet osi X
+                "labelFontSize": 14  // Rozmiar czcionki etykiet osi X
+              }
+            },
+            "color": {
+              "aggregate": "sum",
+              "field": "Total Orders",
+              "type": "quantitative",
+              "title": "Orders Delivered",
+              "legend": {
+                "direction": "vertical",
+                "gradientLength": 120,
+                "labelFont": "DIN",  // Czcionka etykiet legendy
+                "labelFontSize": 14,  // Rozmiar czcionki etykiet legendy
+                "titleFont": "DIN",  // Czcionka tytułu legendy
+                "titleFontSize": 14  // Rozmiar czcionki tytułu legendy
+              },
+              "scale": {
+                "type": "linear",
+                "range": ["#E4EAF2", "#5176A4", "#344C69"]
+              }
+            }
+          }
+        },
+        {
+          "width": 90,
+          "height": 200,
+          "mark": {
+            "type": "bar",
+            "stroke": null,
+            "cornerRadiusEnd": 2,
+            "tooltip": true,
+            "color": "#BACADE"
+          },
+          "encoding": {
+            "y": {
+              "field": "Week Day",
+              "axis": null
+            },
+            "x": {
+              "field": "Total Orders",
+              "title": "Total Orders Delivered",
+              "type": "quantitative",
+              "aggregate": "sum",
+              "axis": null
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
