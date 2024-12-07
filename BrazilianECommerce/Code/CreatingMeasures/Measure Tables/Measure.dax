@@ -1,10 +1,80 @@
-﻿'Measure'[% Of Single Orders] = 
+﻿'Measure'[% of Approval Time] = 
+ROUND (
+    DIVIDE ( [Average Approval Time (h)], [Average Total Delivery Time (h)] ),
+    2
+)
+
+'Measure'[% of Carrier Delivery Time] = 
+ROUND (
+    DIVIDE (
+        [Average Carrier Delivery Time (h)],
+        [Average Total Delivery Time (h)]
+    ),
+    2
+)
+
+'Measure'[% of Customer Delivery Time] = 
+1 - [% of Approval Time] - [% of Carrier Delivery Time]
+
+'Measure'[% of Low Rated Orders] = 
+VAR __LowRatedOrders =
+    CALCULATE ( [Total Orders (Payments)], 'Order'[Average Order Rating] < 2.5 )
+VAR __Result =
+    IF (
+        __LowRatedOrders = 0,
+        0,
+        DIVIDE ( __LowRatedOrders, [Total Orders (Payments)], 0 )
+    )
+RETURN
+    __Result
+
+'Measure'[% of Product Revenue (Payments)] = 
+DIVIDE ( [Total Revenue (Payments)], [All Product Revenue (Payments)] )
+
+'Measure'[% of Seller Revenue (Payments)] = 
+DIVIDE ( [Total Revenue (Payments)], [All Seller Revenue (Payments)] )
+
+'Measure'[% of Single Orders] = 
 DIVIDE ( [Total Single Orders], [Total Orders] )
+
+'Measure'[% of State Customers (Payments)] = 
+DIVIDE ( [Total Customers (Payments)], [All State Customers (Payments)] )
+
+'Measure'[% of State Revenue (Payments)] = 
+DIVIDE ( [Total Revenue (Payments)], [All State Revenue (Payments)] )
 
 'Measure'[Active Customers] = 
 CALCULATE (
     DISTINCTCOUNT ( 'Order'[Customer Unique Id] ),
     KEEPFILTERS ( Orders )
+)
+
+'Measure'[All Product Revenue (Payments)] = 
+CALCULATE (
+    [Total Revenue (Payments)],
+    ALL ( 'Product' ),
+    KEEPFILTERS ( 'Calendar' )
+)
+
+'Measure'[All Seller Revenue (Payments)] = 
+CALCULATE (
+    [Total Revenue (Payments)],
+    ALL ( Seller ),
+    KEEPFILTERS ( 'Calendar' )
+)
+
+'Measure'[All State Customers (Payments)] = 
+CALCULATE (
+    [Total Customers (Payments)],
+    ALL ( State ),
+    KEEPFILTERS ( 'Calendar' )
+)
+
+'Measure'[All State Revenue (Payments)] = 
+CALCULATE (
+    [Total Revenue (Payments)],
+    ALL ( State ),
+    KEEPFILTERS ( 'Calendar' )
 )
 
 'Measure'[Average Approval Time] = 
@@ -118,6 +188,9 @@ DIVIDE ( [Total Freight Value], [Total Orders] )
 'Measure'[Average Order Value (AOV)] = 
 DIVIDE ( [Total Revenue (Payments)], [Total Orders Delivered] )
 
+'Measure'[Average Order Value (AOV) (Payments)] = 
+DIVIDE ( [Total Revenue (Payments)], [Total Orders Delivered (Payments)] )
+
 'Measure'[Average Product Photos Quantity] = 
 CALCULATE ( AVERAGE ( 'Product'[Photos Quantity] ), KEEPFILTERS ( Orders ) )
 
@@ -192,7 +265,7 @@ VAR __MonthsAfter =
         SELECTEDVALUE ( 'Order'[Months Since First Transaction] ),
         REMOVEFILTERS ( Calendar[Start of Month] ),
         REMOVEFILTERS ( Calendar[Month Year] )
-    )
+    ) + 1
 VAR __MonthsAfterLimit =
     DATEDIFF ( __MinDate, [End Date], MONTH )
 VAR __Result =
@@ -203,8 +276,14 @@ RETURN
 'Measure'[Customer Lifespan (CL)] = 
 CALCULATE ( AVERAGE ( Customer[Customer Lifespan] ), KEEPFILTERS ( Orders ) )
 
+'Measure'[Customer Lifespan (CL) (Payments)] = 
+CALCULATE ( [Customer Lifespan (CL)], KEEPFILTERS ( Payments ) )
+
 'Measure'[Customer Lifetime Value (CLV)] = 
 [Purchase Frequency (PF)] * [Average Order Value (AOV)] * [Gross Margin (GS)] * [Customer Lifespan (CL)]
+
+'Measure'[Customer Lifetime Value (CLV) (Payments)] = 
+[Purchase Frequency (PF) (Payments)] * [Average Order Value (AOV) (Payments)] * [Gross Margin (GS)] * [Customer Lifespan (CL) (Payments)]
 
 'Measure'[End Date] = 
 DATE ( 2018, 10, 18 )
@@ -215,7 +294,7 @@ DISTINCTCOUNT ( 'Order'[Order Id] )
 'Measure'[Gross Margin (GS)] = 
 0.15
 
-'Measure'[Items Per Order] = 
+'Measure'[Items per Order] = 
 DIVIDE ( [Total Ordered Products], [Total Orders] )
 
 'Measure'[Last Transaction Date] = 
@@ -226,6 +305,258 @@ MAXX (
     ),
     'Order'[Purchase Date]
 )
+
+'Measure'[LM MOM % % of Single Orders] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM % % of Single Orders],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM % of Single Orders],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Average Order Cancellation Rate] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Average Order Cancellation Rate],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Average Order Cancellation Rate],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Average Order Freight Value] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Average Order Freight Value],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Average Order Freight Value],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Average Order Value (AOV)] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Average Order Value (AOV)],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Average Order Value (AOV)],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Average Product Photos Quantity] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Average Product Photos Quantity],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Average Product Photos Quantity],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Average Product Volume] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Average Product Volume],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Average Product Volume],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Customer Lifetime Value (CLV) (Payments)] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Customer Lifetime Value (CLV) (Payments)],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Customer Lifetime Value (CLV) (Payments)],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Items per Order] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Items per Order],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Items per Order],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % On-Time Delivery Rate] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM On-Time Delivery Rate],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM On-Time Delivery Rate],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Total Categories] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Total Categories],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Total Categories],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Total Customers (Payments)] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Total Customers (Payments)],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Total Customers (Payments)],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Total Freight Value] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Total Freight Value],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Total Freight Value],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Total Ordered Products] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Total Ordered Products],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Total Ordered Products],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Total Orders] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Total Orders],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE ( [PM Total Orders], 'Calendar'[Start of Month] = __LastMonthEndDate )
+    )
+
+'Measure'[LM MOM % Total Products] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Total Products],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Total Products],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Total Revenue (Payments)] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Total Revenue (Payments)],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Total Revenue (Payments)],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
+
+'Measure'[LM MOM % Total Sellers] = 
+VAR __LastMonthEndDate =
+    LASTDATE ( 'Calendar'[Start of Month] )
+RETURN
+    DIVIDE (
+        CALCULATE (
+            [MOM Total Sellers],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        ),
+        CALCULATE (
+            [PM Total Sellers],
+            'Calendar'[Start of Month] = __LastMonthEndDate
+        )
+    )
 
 'Measure'[Lost Customers] = 
 VAR __CustomersThisMonth =
@@ -242,14 +573,830 @@ VAR __Result =
 RETURN
     __Result
 
+'Measure'[MOM % % of Single Orders] = 
+DIVIDE ( [MOM % of Single Orders], [PM % of Single Orders] )
+
+'Measure'[MOM % Average Order Cancellation Rate] = 
+DIVIDE (
+    [MOM Average Order Cancellation Rate],
+    [PM Average Order Cancellation Rate]
+)
+
+'Measure'[MOM % Average Order Freight Value] = 
+DIVIDE ( [MOM Average Order Freight Value], [PM Average Order Freight Value] )
+
+'Measure'[MOM % Average Order Value (AOV)] = 
+DIVIDE ( [MOM Average Order Value (AOV)], [PM Average Order Value (AOV)] )
+
+'Measure'[MOM % Average Product Photos Quantity] = 
+DIVIDE (
+    [MOM Average Product Photos Quantity],
+    [PM Average Product Photos Quantity]
+)
+
+'Measure'[MOM % Average Product Volume] = 
+DIVIDE ( [MOM Average Product Volume], [PM Average Product Volume] )
+
+'Measure'[MOM % Average Total Delivery Time (h)] = 
+DIVIDE (
+    [MOM Average Total Delivery Time (h)],
+    [PM Average Total Delivery Time (h)]
+)
+
+'Measure'[MOM % Customer Lifetime Value (CLV)] = 
+DIVIDE (
+    [MOM Customer Lifetime Value (CLV)],
+    [PM Customer Lifetime Value (CLV)]
+)
+
+'Measure'[MOM % Customer Lifetime Value (CLV) (Payments)] = 
+DIVIDE (
+    [MOM Customer Lifetime Value (CLV) (Payments)],
+    [PM Customer Lifetime Value (CLV) (Payments)]
+)
+
+'Measure'[MOM % Items per Order] = 
+DIVIDE ( [MOM Items per Order], [PM Items per Order] )
+
+'Measure'[MOM % New Customers] = 
+DIVIDE ( [MOM New Customers], [PM New Customers] )
+
+'Measure'[MOM % of Single Orders] = 
+VAR __ValueCurrentPeriod = [% of Single Orders]
+VAR __ValuePreviousPeriod = [PM % of Single Orders]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM % On-Time Delivery Rate] = 
+DIVIDE ( [MOM On-Time Delivery Rate], [PM On-Time Delivery Rate] )
+
+'Measure'[MOM % Total Categories] = 
+DIVIDE ( [MOM Total Categories], [PM Total Categories] )
+
+'Measure'[MOM % Total Customers] = 
+DIVIDE ( [MOM Total Customers], [PM Total Customers] )
+
+'Measure'[MOM % Total Customers (Payments)] = 
+DIVIDE ( [MOM Total Customers (Payments)], [PM Total Customers (Payments)] )
+
+'Measure'[MOM % Total Freight Value] = 
+DIVIDE ( [MOM Total Freight Value], [PM Total Freight Value] )
+
+'Measure'[MOM % Total Ordered Products] = 
+DIVIDE ( [MOM Total Ordered Products], [PM Total Ordered Products] )
+
+'Measure'[MOM % Total Orders] = 
+DIVIDE ( [MOM Total Orders], [PM Total Orders] )
+
+'Measure'[MOM % Total Products] = 
+DIVIDE ( [MOM Total Products], [PM Total Products] )
+
+'Measure'[MOM % Total Revenue (Payments)] = 
+DIVIDE ( [MOM Total Revenue (Payments)], [PM Total Revenue (Payments)] )
+
+'Measure'[MOM % Total Sellers] = 
+DIVIDE ( [MOM Total Sellers], [PM Total Sellers] )
+
+'Measure'[MOM Average Order Cancellation Rate] = 
+VAR __ValueCurrentPeriod = [Average Order Cancellation Rate]
+VAR __ValuePreviousPeriod = [PM Average Order Cancellation Rate]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Average Order Freight Value] = 
+VAR __ValueCurrentPeriod = [Average Order Freight Value]
+VAR __ValuePreviousPeriod = [PM Average Order Freight Value]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Average Order Value (AOV)] = 
+VAR __ValueCurrentPeriod = [Average Order Value (AOV)]
+VAR __ValuePreviousPeriod = [PM Average Order Value (AOV)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Average Product Photos Quantity] = 
+VAR __ValueCurrentPeriod = [Average Product Photos Quantity]
+VAR __ValuePreviousPeriod = [PM Average Product Photos Quantity]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Average Product Volume] = 
+VAR __ValueCurrentPeriod = [Average Product Volume]
+VAR __ValuePreviousPeriod = [PM Average Product Volume]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Average Total Delivery Time (h)] = 
+VAR __ValueCurrentPeriod = [Average Total Delivery Time (h)]
+VAR __ValuePreviousPeriod = [PM Average Total Delivery Time (h)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Customer Lifetime Value (CLV)] = 
+VAR __ValueCurrentPeriod = [Customer Lifetime Value (CLV)]
+VAR __ValuePreviousPeriod = [PM Customer Lifetime Value (CLV)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Customer Lifetime Value (CLV) (Payments)] = 
+VAR __ValueCurrentPeriod = [Customer Lifetime Value (CLV) (Payments)]
+VAR __ValuePreviousPeriod = [PM Customer Lifetime Value (CLV) (Payments)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Items per Order] = 
+VAR __ValueCurrentPeriod = [Items per Order]
+VAR __ValuePreviousPeriod = [PM Items per Order]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM New Customers] = 
+VAR __ValueCurrentPeriod = [New Customers]
+VAR __ValuePreviousPeriod = [PM New Customers]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM On-Time Delivery Rate] = 
+VAR __ValueCurrentPeriod = [On-Time Delivery Rate]
+VAR __ValuePreviousPeriod = [PM On-Time Delivery Rate]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Total Categories] = 
+VAR __ValueCurrentPeriod = [Total Categories]
+VAR __ValuePreviousPeriod = [PM Total Categories]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Total Customers] = 
+VAR __ValueCurrentPeriod = [Total Customers]
+VAR __ValuePreviousPeriod = [PM Total Customers]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Total Customers (Payments)] = 
+VAR __ValueCurrentPeriod = [Total Customers (Payments)]
+VAR __ValuePreviousPeriod = [PM Total Customers (Payments)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Total Freight Value] = 
+VAR __ValueCurrentPeriod = [Total Freight Value]
+VAR __ValuePreviousPeriod = [PM Total Freight Value]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Total Ordered Products] = 
+VAR __ValueCurrentPeriod = [Total Ordered Products]
+VAR __ValuePreviousPeriod = [PM Total Ordered Products]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Total Orders] = 
+VAR __ValueCurrentPeriod = [Total Orders]
+VAR __ValuePreviousPeriod = [PM Total Orders]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Total Products] = 
+VAR __ValueCurrentPeriod = [Total Products]
+VAR __ValuePreviousPeriod = [PM Total Products]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Total Revenue (Payments)] = 
+VAR __ValueCurrentPeriod = [Total Revenue (Payments)]
+VAR __ValuePreviousPeriod = [PM Total Revenue (Payments)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[MOM Total Sellers] = 
+VAR __ValueCurrentPeriod = [Total Sellers]
+VAR __ValuePreviousPeriod = [PM Total Sellers]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
 'Measure'[Monetary (M)] = 
 SUM ( Orders[Revenue] )
 
 'Measure'[New Customers] = 
-CALCULATE ( [Active Customers], 'Order'[Months Since First Transaction] = 0 )
+CALCULATE ( [Active Customers], 'Order'[Months Since First Transaction] = 0 ) + 0
+
+'Measure'[New Customers (Payments)] = 
+CALCULATE ( [New Customers], KEEPFILTERS ( Payments ) )
 
 'Measure'[On-Time Delivery Rate] = 
 DIVIDE ( [Total Orders Delivered On-Time], [Total Orders Delivered] )
+
+'Measure'[PM % of Single Orders] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [% of Single Orders],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Average Order Cancellation Rate] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Order Cancellation Rate],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Average Order Freight Value] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Order Freight Value],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Average Order Value (AOV)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Order Value (AOV)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Average Product Photos Quantity] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Product Photos Quantity],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Average Product Volume] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Product Volume],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Average Total Delivery Time (h)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Total Delivery Time (h)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Customer Lifetime Value (CLV)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Customer Lifetime Value (CLV)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Customer Lifetime Value (CLV) (Payments)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Customer Lifetime Value (CLV) (Payments)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Items per Order] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Items per Order],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM New Customers] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [New Customers],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM On-Time Delivery Rate] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [On-Time Delivery Rate],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Total Categories] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Categories],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Total Customers] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Customers],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Total Customers (Payments)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Customers (Payments)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Total Freight Value] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Freight Value],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Total Ordered Products] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Ordered Products],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Total Orders] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Orders],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Total Products] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Products],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Total Revenue (Payments)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Revenue (Payments)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PM Total Sellers] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Sellers],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, MONTH ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ % of Single Orders] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [% of Single Orders],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Average Order Cancellation Rate] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Order Cancellation Rate],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Average Order Freight Value] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Order Freight Value],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Average Order Value (AOV)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Order Value (AOV)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Average Product Photos Quantity] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Product Photos Quantity],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Average Product Volume] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Product Volume],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Average Total Delivery Time (h)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Total Delivery Time (h)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Customer Lifetime Value (CLV)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Customer Lifetime Value (CLV)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Customer Lifetime Value (CLV) (Payments)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Customer Lifetime Value (CLV) (Payments)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Items per Order] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Items per Order],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ New Customers] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [New Customers],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ On-Time Delivery Rate] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [On-Time Delivery Rate],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Total Categories] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Categories],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Total Customers] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Customers],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Total Customers (Payments)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Customers (Payments)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Total Freight Value] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Freight Value],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Total Ordered Products] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Ordered Products],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Total Orders] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Orders],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Total Products] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Products],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Total Revenue (Payments)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Revenue (Payments)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PQ Total Sellers] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Sellers],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, QUARTER ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
 
 'Measure'[Product Sellers] = 
 CALCULATE ( DISTINCTCOUNT ( Seller[Seller Id] ), KEEPFILTERS ( Orders ) )
@@ -257,10 +1404,601 @@ CALCULATE ( DISTINCTCOUNT ( Seller[Seller Id] ), KEEPFILTERS ( Orders ) )
 'Measure'[Purchase Frequency (PF)] = 
 CALCULATE ( AVERAGE ( Customer[F Value] ), KEEPFILTERS ( Orders ) )
 
+'Measure'[Purchase Frequency (PF) (Payments)] = 
+CALCULATE ( [Purchase Frequency (PF)], KEEPFILTERS ( Payments ) )
+
+'Measure'[PY % of Single Orders] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [% of Single Orders],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Average Order Cancellation Rate] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Order Cancellation Rate],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Average Order Freight Value] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Order Freight Value],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Average Order Value (AOV)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Order Value (AOV)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Average Product Photos Quantity] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Product Photos Quantity],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Average Product Volume] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Product Volume],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Average Total Delivery Time] = 
+VAR __AvgSeconds = [Average Total Delivery Time (sec)]
+VAR __Days =
+    QUOTIENT ( __AvgSeconds, 86400 )
+VAR __Hours =
+    QUOTIENT ( MOD ( __AvgSeconds, 86400 ), 3600 )
+VAR __Minutes =
+    QUOTIENT ( MOD ( __AvgSeconds, 3600 ), 60 )
+VAR __Seconds =
+    MOD ( __AvgSeconds, 60 )
+VAR __ApprovalTimeString =
+    IF ( __Days > 0, __Days & IF ( __Days = 1, " day, ", " days, " ), "" )
+        & FORMAT ( __Hours, "00" ) & ":"
+        & FORMAT ( __Minutes, "00" ) & ":"
+        & FORMAT ( __Seconds, "00" )
+VAR __Result =
+    IF (
+        COUNT ( 'Order'[Order Id] ) > 0,
+        IF ( __AvgSeconds > 0, __ApprovalTimeString, "None" ),
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Measure'[PY Average Total Delivery Time (h)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Average Total Delivery Time (h)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Customer Lifetime Value (CLV)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Customer Lifetime Value (CLV)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Customer Lifetime Value (CLV) (Payments)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Customer Lifetime Value (CLV) (Payments)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Items per Order] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Items per Order],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY New Customers] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [New Customers],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY On-Time Delivery Rate] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [On-Time Delivery Rate],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Total Categories] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Categories],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Total Customers] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Customers],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Total Customers (Payments)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Customers (Payments)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Total Freight Value] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Freight Value],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Total Ordered Products] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Ordered Products],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Total Orders] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Orders],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Total Products] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Products],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Total Revenue (Payments)] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Revenue (Payments)],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[PY Total Sellers] = 
+IF (
+    [_ShowValueForDates],
+    CALCULATE (
+        [Total Sellers],
+        CALCULATETABLE (
+            DATEADD ( 'Calendar2'[Date], -1, YEAR ),
+            'Calendar2'[DateWithTransactions] = TRUE
+        )
+    )
+)
+
+'Measure'[QOQ % % of Single Orders] = 
+DIVIDE ( [QOQ % of Single Orders], [PQ % of Single Orders] )
+
+'Measure'[QOQ % Average Order Cancellation Rate] = 
+DIVIDE (
+    [QOQ Average Order Cancellation Rate],
+    [PQ Average Order Cancellation Rate]
+)
+
+'Measure'[QOQ % Average Order Freight Value] = 
+DIVIDE ( [QOQ Average Order Freight Value], [PQ Average Order Freight Value] )
+
+'Measure'[QOQ % Average Order Value (AOV)] = 
+DIVIDE ( [QOQ Average Order Value (AOV)], [PQ Average Order Value (AOV)] )
+
+'Measure'[QOQ % Average Product Photos Quantity] = 
+DIVIDE (
+    [QOQ Average Product Photos Quantity],
+    [PQ Average Product Photos Quantity]
+)
+
+'Measure'[QOQ % Average Product Volume] = 
+DIVIDE ( [QOQ Average Product Volume], [PQ Average Product Volume] )
+
+'Measure'[QOQ % Average Total Delivery Time (h)] = 
+DIVIDE (
+    [QOQ Average Total Delivery Time (h)],
+    [PQ Average Total Delivery Time (h)]
+)
+
+'Measure'[QOQ % Customer Lifetime Value (CLV)] = 
+DIVIDE (
+    [QOQ Customer Lifetime Value (CLV)],
+    [PQ Customer Lifetime Value (CLV)]
+)
+
+'Measure'[QOQ % Customer Lifetime Value (CLV) (Payments)] = 
+DIVIDE (
+    [QOQ Customer Lifetime Value (CLV) (Payments)],
+    [PQ Customer Lifetime Value (CLV) (Payments)]
+)
+
+'Measure'[QOQ % Items per Order] = 
+DIVIDE ( [QOQ Items per Order], [PQ Items per Order] )
+
+'Measure'[QOQ % New Customers] = 
+DIVIDE ( [QOQ New Customers], [PQ New Customers] )
+
+'Measure'[QOQ % of Single Orders] = 
+VAR __ValueCurrentPeriod = [% of Single Orders]
+VAR __ValuePreviousPeriod = [PQ % of Single Orders]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ % On-Time Delivery Rate] = 
+DIVIDE ( [QOQ On-Time Delivery Rate], [PQ On-Time Delivery Rate] )
+
+'Measure'[QOQ % Total Categories] = 
+DIVIDE ( [QOQ Total Categories], [PQ Total Categories] )
+
+'Measure'[QOQ % Total Customers] = 
+DIVIDE ( [QOQ Total Customers], [PQ Total Customers] )
+
+'Measure'[QOQ % Total Customers (Payments)] = 
+DIVIDE ( [QOQ Total Customers (Payments)], [PQ Total Customers (Payments)] )
+
+'Measure'[QOQ % Total Freight Value] = 
+DIVIDE ( [QOQ Total Freight Value], [PQ Total Freight Value] )
+
+'Measure'[QOQ % Total Ordered Products] = 
+DIVIDE ( [QOQ Total Ordered Products], [PQ Total Ordered Products] )
+
+'Measure'[QOQ % Total Orders] = 
+DIVIDE ( [QOQ Total Orders], [PQ Total Orders] )
+
+'Measure'[QOQ % Total Products] = 
+DIVIDE ( [QOQ Total Products], [PQ Total Products] )
+
+'Measure'[QOQ % Total Revenue (Payments)] = 
+DIVIDE ( [QOQ Total Revenue (Payments)], [PQ Total Revenue (Payments)] )
+
+'Measure'[QOQ % Total Sellers] = 
+DIVIDE ( [QOQ Total Sellers], [PQ Total Sellers] )
+
+'Measure'[QOQ Average Order Cancellation Rate] = 
+VAR __ValueCurrentPeriod = [Average Order Cancellation Rate]
+VAR __ValuePreviousPeriod = [PQ Average Order Cancellation Rate]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Average Order Freight Value] = 
+VAR __ValueCurrentPeriod = [Average Order Freight Value]
+VAR __ValuePreviousPeriod = [PQ Average Order Freight Value]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Average Order Value (AOV)] = 
+VAR __ValueCurrentPeriod = [Average Order Value (AOV)]
+VAR __ValuePreviousPeriod = [PQ Average Order Value (AOV)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Average Product Photos Quantity] = 
+VAR __ValueCurrentPeriod = [Average Product Photos Quantity]
+VAR __ValuePreviousPeriod = [PQ Average Product Photos Quantity]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Average Product Volume] = 
+VAR __ValueCurrentPeriod = [Average Product Volume]
+VAR __ValuePreviousPeriod = [PQ Average Product Volume]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Average Total Delivery Time (h)] = 
+VAR __ValueCurrentPeriod = [Average Total Delivery Time (h)]
+VAR __ValuePreviousPeriod = [PQ Average Total Delivery Time (h)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Customer Lifetime Value (CLV)] = 
+VAR __ValueCurrentPeriod = [Customer Lifetime Value (CLV)]
+VAR __ValuePreviousPeriod = [PQ Customer Lifetime Value (CLV)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Customer Lifetime Value (CLV) (Payments)] = 
+VAR __ValueCurrentPeriod = [Customer Lifetime Value (CLV) (Payments)]
+VAR __ValuePreviousPeriod = [PQ Customer Lifetime Value (CLV) (Payments)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Items per Order] = 
+VAR __ValueCurrentPeriod = [Items per Order]
+VAR __ValuePreviousPeriod = [PQ Items per Order]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ New Customers] = 
+VAR __ValueCurrentPeriod = [New Customers]
+VAR __ValuePreviousPeriod = [PQ New Customers]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ On-Time Delivery Rate] = 
+VAR __ValueCurrentPeriod = [On-Time Delivery Rate]
+VAR __ValuePreviousPeriod = [PQ On-Time Delivery Rate]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Total Categories] = 
+VAR __ValueCurrentPeriod = [Total Categories]
+VAR __ValuePreviousPeriod = [PQ Total Categories]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Total Customers] = 
+VAR __ValueCurrentPeriod = [Total Customers]
+VAR __ValuePreviousPeriod = [PQ Total Customers]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Total Customers (Payments)] = 
+VAR __ValueCurrentPeriod = [Total Customers (Payments)]
+VAR __ValuePreviousPeriod = [PQ Total Customers (Payments)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Total Freight Value] = 
+VAR __ValueCurrentPeriod = [Total Freight Value]
+VAR __ValuePreviousPeriod = [PQ Total Freight Value]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Total Ordered Products] = 
+VAR __ValueCurrentPeriod = [Total Ordered Products]
+VAR __ValuePreviousPeriod = [PQ Total Ordered Products]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Total Orders] = 
+VAR __ValueCurrentPeriod = [Total Orders]
+VAR __ValuePreviousPeriod = [PQ Total Orders]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Total Products] = 
+VAR __ValueCurrentPeriod = [Total Products]
+VAR __ValuePreviousPeriod = [PQ Total Products]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Total Revenue (Payments)] = 
+VAR __ValueCurrentPeriod = [Total Revenue (Payments)]
+VAR __ValuePreviousPeriod = [PQ Total Revenue (Payments)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[QOQ Total Sellers] = 
+VAR __ValueCurrentPeriod = [Total Sellers]
+VAR __ValuePreviousPeriod = [PQ Total Sellers]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
 'Measure'[Recency (R)] = 
 DATEDIFF ( [Last Transaction Date], [End Date], DAY )
 
-'Measure'[Resurrected Customers] = 
+'Measure'[Recovered & Returning Customers] = 
+[Recovered Customers] + [Returning Customers]
+
+'Measure'[Recovered Customers] = 
 VAR __CustomersThisMonth =
     VALUES ( 'Order'[Customer Unique Id] )
 VAR __CustomersLastMonth =
@@ -284,12 +2022,30 @@ VAR __ResurrectedCustomers =
         __NewCustomers
     )
 VAR __Result =
-    COUNTROWS ( __ResurrectedCustomers )
+    COUNTROWS ( __ResurrectedCustomers ) + 0
 RETURN
     __Result
 
 'Measure'[Retention Rate] = 
 DIVIDE ( [Cohort Performance], [New Customers] )
+
+'Measure'[Retention Rate 1st Month] = 
+CALCULATE ( [Retention Rate], 'Order'[Months Since First Transaction] = 1 )
+
+'Measure'[Returning Customers] = 
+VAR __CustomersThisMonth =
+    VALUES ( 'Order'[Customer Unique Id] )
+VAR __CustomersLastMonth =
+    CALCULATETABLE (
+        VALUES ( 'Order'[Customer Unique Id] ),
+        PREVIOUSMONTH ( Calendar[Start of Month] )
+    )
+VAR __ReturningCustomers =
+    INTERSECT ( __CustomersLastMonth, __CustomersThisMonth )
+VAR __Result =
+    COUNTROWS ( __ReturningCustomers ) + 0
+RETURN
+    __Result
 
 'Measure'[Total Categories] = 
 CALCULATE ( DISTINCTCOUNT ( Category[Category Id] ), KEEPFILTERS ( Orders ) )
@@ -300,6 +2056,9 @@ CALCULATE (
     KEEPFILTERS ( Orders )
 )
 
+'Measure'[Total Customers (Payments)] = 
+CALCULATE ( [Total Customers], KEEPFILTERS ( Payments ) )
+
 'Measure'[Total Freight Value] = 
 SUM ( Orders[Freight Value] )
 
@@ -308,6 +2067,12 @@ COUNT ( Orders[Product Id] )
 
 'Measure'[Total Orders] = 
 CALCULATE ( DISTINCTCOUNT ( 'Order'[Order Id] ), KEEPFILTERS ( Orders ) )
+
+'Measure'[Total Orders (Payments)] = 
+CALCULATE ( [Total Orders], KEEPFILTERS ( Payments ) )
+
+'Measure'[Total Orders (Reviews)] = 
+CALCULATE ( [Total Orders], KEEPFILTERS ( Reviews ) )
 
 'Measure'[Total Orders Canceled] = 
 CALCULATE (
@@ -341,3 +2106,3590 @@ CALCULATE ( DISTINCTCOUNT ( Seller[Seller Id] ), KEEPFILTERS ( Orders ) )
 
 'Measure'[Total Single Orders] = 
 CALCULATE ( [Total Orders], 'Order'[Single Order] = 1 )
+
+'Measure'[YOY % % of Single Orders] = 
+DIVIDE ( [YOY % of Single Orders], [PY % of Single Orders] )
+
+'Measure'[YOY % Average Order Cancellation Rate] = 
+DIVIDE (
+    [YOY Average Order Cancellation Rate],
+    [PY Average Order Cancellation Rate]
+)
+
+'Measure'[YOY % Average Order Freight Value] = 
+DIVIDE ( [YOY Average Order Freight Value], [PY Average Order Freight Value] )
+
+'Measure'[YOY % Average Order Value (AOV)] = 
+DIVIDE ( [YOY Average Order Value (AOV)], [PY Average Order Value (AOV)] )
+
+'Measure'[YOY % Average Product Photos Quantity] = 
+DIVIDE (
+    [YOY Average Product Photos Quantity],
+    [PY Average Product Photos Quantity]
+)
+
+'Measure'[YOY % Average Product Volume] = 
+DIVIDE ( [YOY Average Product Volume], [PY Average Product Volume] )
+
+'Measure'[YOY % Average Total Delivery Time (h)] = 
+DIVIDE (
+    [YOY Average Total Delivery Time (h)],
+    [PY Average Total Delivery Time (h)]
+)
+
+'Measure'[YOY % Customer Lifetime Value (CLV)] = 
+DIVIDE (
+    [YOY Customer Lifetime Value (CLV)],
+    [PY Customer Lifetime Value (CLV)]
+)
+
+'Measure'[YOY % Customer Lifetime Value (CLV) (Payments)] = 
+DIVIDE (
+    [YOY Customer Lifetime Value (CLV) (Payments)],
+    [PY Customer Lifetime Value (CLV) (Payments)]
+)
+
+'Measure'[YOY % Items per Order] = 
+DIVIDE ( [YOY Items per Order], [PY Items per Order] )
+
+'Measure'[YOY % New Customers] = 
+DIVIDE ( [YOY New Customers], [PY New Customers] )
+
+'Measure'[YOY % of Single Orders] = 
+VAR __ValueCurrentPeriod = [% of Single Orders]
+VAR __ValuePreviousPeriod = [PY % of Single Orders]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY % On-Time Delivery Rate] = 
+DIVIDE ( [YOY On-Time Delivery Rate], [PY On-Time Delivery Rate] )
+
+'Measure'[YOY % Total Categories] = 
+DIVIDE ( [YOY Total Categories], [PY Total Categories] )
+
+'Measure'[YOY % Total Customers] = 
+DIVIDE ( [YOY Total Customers], [PY Total Customers] )
+
+'Measure'[YOY % Total Customers (Payments)] = 
+DIVIDE ( [YOY Total Customers (Payments)], [PY Total Customers (Payments)] )
+
+'Measure'[YOY % Total Freight Value] = 
+DIVIDE ( [YOY Total Freight Value], [PY Total Freight Value] )
+
+'Measure'[YOY % Total Ordered Products] = 
+DIVIDE ( [YOY Total Ordered Products], [PY Total Ordered Products] )
+
+'Measure'[YOY % Total Orders] = 
+DIVIDE ( [YOY Total Orders], [PY Total Orders] )
+
+'Measure'[YOY % Total Products] = 
+DIVIDE ( [YOY Total Products], [PY Total Products] )
+
+'Measure'[YOY % Total Revenue (Payments)] = 
+DIVIDE ( [YOY Total Revenue (Payments)], [PY Total Revenue (Payments)] )
+
+'Measure'[YOY % Total Sellers] = 
+DIVIDE ( [YOY Total Sellers], [PY Total Sellers] )
+
+'Measure'[YOY Average Order Cancellation Rate] = 
+VAR __ValueCurrentPeriod = [Average Order Cancellation Rate]
+VAR __ValuePreviousPeriod = [PY Average Order Cancellation Rate]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Average Order Freight Value] = 
+VAR __ValueCurrentPeriod = [Average Order Freight Value]
+VAR __ValuePreviousPeriod = [PY Average Order Freight Value]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Average Order Value (AOV)] = 
+VAR __ValueCurrentPeriod = [Average Order Value (AOV)]
+VAR __ValuePreviousPeriod = [PY Average Order Value (AOV)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Average Product Photos Quantity] = 
+VAR __ValueCurrentPeriod = [Average Product Photos Quantity]
+VAR __ValuePreviousPeriod = [PY Average Product Photos Quantity]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Average Product Volume] = 
+VAR __ValueCurrentPeriod = [Average Product Volume]
+VAR __ValuePreviousPeriod = [PY Average Product Volume]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Average Total Delivery Time (h)] = 
+VAR __ValueCurrentPeriod = [Average Total Delivery Time (h)]
+VAR __ValuePreviousPeriod = [PY Average Total Delivery Time (h)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Customer Lifetime Value (CLV)] = 
+VAR __ValueCurrentPeriod = [Customer Lifetime Value (CLV)]
+VAR __ValuePreviousPeriod = [PY Customer Lifetime Value (CLV)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Customer Lifetime Value (CLV) (Payments)] = 
+VAR __ValueCurrentPeriod = [Customer Lifetime Value (CLV) (Payments)]
+VAR __ValuePreviousPeriod = [PY Customer Lifetime Value (CLV) (Payments)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Items per Order] = 
+VAR __ValueCurrentPeriod = [Items per Order]
+VAR __ValuePreviousPeriod = [PY Items per Order]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY New Customers] = 
+VAR __ValueCurrentPeriod = [New Customers]
+VAR __ValuePreviousPeriod = [PY New Customers]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY On-Time Delivery Rate] = 
+VAR __ValueCurrentPeriod = [On-Time Delivery Rate]
+VAR __ValuePreviousPeriod = [PY On-Time Delivery Rate]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Total Categories] = 
+VAR __ValueCurrentPeriod = [Total Categories]
+VAR __ValuePreviousPeriod = [PY Total Categories]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Total Customers] = 
+VAR __ValueCurrentPeriod = [Total Customers]
+VAR __ValuePreviousPeriod = [PY Total Customers]
+VAR __Result =DEFINE 
+---- MODEL MEASURES BEGIN ----
+
+'Visual Measure'[% of Single Orders - Sparkline - Card - Sales] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [% of Single Orders] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [% of Single Orders] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT ( 50 * DIVIDE ( [% of Single Orders] - YMinValue, YMaxValue - YMinValue ) )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[% of Single Orders - Subtitle - Card - Sales] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % % of Single Orders] > 0, UNICHAR ( 11165 ),
+        [LM MOM % % of Single Orders] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % % of Single Orders], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % % of Single Orders], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % % of Single Orders] ), "-",
+        [LM MOM % % of Single Orders] = 0, "No MoM Change",
+        [LM MOM % % of Single Orders] < 0, __Negative,
+        [LM MOM % % of Single Orders] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[AOV Rank - Payment - Tooltip - Customer] = 
+VAR __CurrentPaymentTypeAOV = [Average Order Value (AOV) (Payments)]
+VAR __AllPaymentTypesAOV =
+    ADDCOLUMNS (
+        ALL ( 'Payment Type'[Payment Type] ),
+        "AOV", [Average Order Value (AOV) (Payments)]
+    )
+VAR __AOVRank =
+    RANKX (
+        __AllPaymentTypesAOV,
+        [Average Order Value (AOV) (Payments)],
+        __CurrentPaymentTypeAOV,
+        DESC,
+        DENSE
+    )
+VAR __Result = "Rank " & __AOVRank
+RETURN
+    __Result
+
+'Visual Measure'[Approval Time Icon] = 
+"data:image/svg+xml;utf8," & "<svg width='46' height='46' viewBox='0 0 46 46' fill='none' xmlns='http://www.w3.org/2000/svg'>
+<g clip-path='url(#clip0_3020_89)'>
+<path d='M40.4578 16.4628H28.0458V16.8107C28.0458 19.5929 25.7823 21.8565 23 21.8565C20.2178 21.8565 17.9542 19.5931 17.9542 16.8107V16.4628H5.54219C2.48617 16.4628 0 18.9492 0 22.0051V23.8339C0 26.2529 1.55791 28.3151 3.72316 29.0696L4.92051 40.8043C5.26835 43.5698 7.63262 45.6552 10.4197 45.6552H35.5806C38.3677 45.6552 40.7319 43.5698 41.0798 40.8043L42.2771 29.0696C44.4421 28.3151 46 26.2529 46 23.8339V22.0051C46 18.9492 43.5138 16.4628 40.4578 16.4628ZM16.2987 37.778C16.2987 38.8354 15.4415 39.6924 14.3841 39.6924C13.3266 39.6924 12.4694 38.8354 12.4694 37.778V30.2151C12.4694 29.1578 13.3266 28.3005 14.3841 28.3005C15.4414 28.3005 16.2987 29.1578 16.2987 30.2151V37.778ZM24.9147 37.778C24.9147 38.8354 24.0573 39.6924 23 39.6924C21.9427 39.6924 21.0853 38.8354 21.0853 37.778V30.2151C21.0853 29.1578 21.9427 28.3005 23 28.3005C24.0573 28.3005 24.9147 29.1578 24.9147 30.2151V37.778ZM33.5306 37.778C33.5306 38.8354 32.6734 39.6924 31.6159 39.6924C30.5586 39.6924 29.7013 38.8354 29.7013 37.778V30.2151C29.7013 29.1578 30.5585 28.3005 31.6159 28.3005C32.6734 28.3005 33.5306 29.1578 33.5306 30.2151V37.778Z' fill='#344C69'/>
+<path d='M23.0008 19.8271C24.6666 19.8271 26.0171 18.4766 26.0171 16.8107V3.36111C26.0171 1.69523 24.6666 0.344727 23.0008 0.344727C21.3349 0.344727 19.9844 1.69523 19.9844 3.36111V16.8107C19.9844 18.4766 21.3349 19.8271 23.0008 19.8271Z' fill='#344C69'/>
+</g>
+<defs>
+<clipPath id='clip0_3020_89'>
+<rect width='46' height='46' fill='white'/>
+</clipPath>
+</defs>
+</svg>
+"
+
+'Visual Measure'[Average Order Cancellation Rate - Subtitle - Card - Sales] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Average Order Cancellation Rate] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Average Order Cancellation Rate] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Average Order Cancellation Rate], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Average Order Cancellation Rate], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Average Order Cancellation Rate] ), "-",
+        [LM MOM % Average Order Cancellation Rate] = 0, "No MoM Change",
+        [LM MOM % Average Order Cancellation Rate] < 0, __Negative,
+        [LM MOM % Average Order Cancellation Rate] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Average Order Cancellation Rate - Title Color - Card - Sales] = 
+SWITCH (
+    TRUE (),
+    [LM MOM % Average Order Cancellation Rate] > 0, [Negative Color],
+    [LM MOM % Average Order Cancellation Rate] < 0, [Positive Color]
+)
+
+'Visual Measure'[Average Order Freight Value - Sparkline - Card - Product] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used Total Categories along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Average Order Freight Value] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Average Order Freight Value] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT (
+                50
+                    * DIVIDE ( [Average Order Freight Value] - YMinValue, YMaxValue - YMinValue )
+            )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Average Order Freight Value - Subtitle - Card - Sales] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Average Order Freight Value] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Average Order Freight Value] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Average Order Freight Value], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Average Order Freight Value], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Average Order Freight Value] ), "-",
+        [LM MOM % Average Order Freight Value] = 0, "No MoM Change",
+        [LM MOM % Average Order Freight Value] < 0, __Negative,
+        [LM MOM % Average Order Freight Value] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Average Order Value - Sparkline - Card - Sales] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Average Order Value (AOV)] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Average Order Value (AOV)] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT (
+                50
+                    * DIVIDE ( [Average Order Value (AOV)] - YMinValue, YMaxValue - YMinValue )
+            )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Average Order Value (AOV) - Subtitle - Card - Sales] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Average Order Value (AOV)] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Average Order Value (AOV)] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Average Order Value (AOV)], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Average Order Value (AOV)], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Average Order Value (AOV)] ), "-",
+        [LM MOM % Average Order Value (AOV)] = 0, "No MoM Change",
+        [LM MOM % Average Order Value (AOV)] < 0, __Negative,
+        [LM MOM % Average Order Value (AOV)] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Average Order Value (AOV) Inverted] = 
+- [Average Order Value (AOV) (Payments)]
+
+'Visual Measure'[Average Product Photos Quantity - Sparkline - Card - Product] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used Total Categories along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Average Product Photos Quantity] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Average Product Photos Quantity] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT (
+                50
+                    * DIVIDE ( [Average Product Photos Quantity] - YMinValue, YMaxValue - YMinValue )
+            )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Average Product Photos Quantity - Subtitle - Card - Product] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Average Product Photos Quantity] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Average Product Photos Quantity] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Average Product Photos Quantity], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Average Product Photos Quantity], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Average Product Photos Quantity] ), "-",
+        [LM MOM % Average Product Photos Quantity] = 0, "No MoM Change",
+        [LM MOM % Average Product Photos Quantity] < 0, __Negative,
+        [LM MOM % Average Product Photos Quantity] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Average Product Photos Quantity - Title Color - Card - Product] = 
+SWITCH (
+    TRUE (),
+    [LM MOM % Average Product Photos Quantity] > 0, [Positive Color],
+    [LM MOM % Average Product Photos Quantity] < 0, [Negative Color]
+)
+
+'Visual Measure'[Average Product Volume - Sparkline - Card - Product] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used Total Categories along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Average Product Volume] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Average Product Volume] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT (
+                50
+                    * DIVIDE ( [Average Product Volume] - YMinValue, YMaxValue - YMinValue )
+            )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Average Product Volume - Subtitle - Card - Product] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Average Product Volume] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Average Product Volume] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Average Product Volume], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Average Product Volume], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Average Product Volume] ), "-",
+        [LM MOM % Average Product Volume] = 0, "No MoM Change",
+        [LM MOM % Average Product Volume] < 0, __Negative,
+        [LM MOM % Average Product Volume] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Blank] = 
+BLANK ()
+
+'Visual Measure'[Blank2] = 
+BLANK ()
+
+'Visual Measure'[Blank3] = 
+BLANK ()
+
+'Visual Measure'[Cambridge Blue] = 
+"#7FACAC"
+
+'Visual Measure'[Carrier Delivery Time Icon] = 
+"data:image/svg+xml;utf8," & "<svg width='46' height='35' viewBox='0 0 46 35' fill='none' xmlns='http://www.w3.org/2000/svg'>
+<path d='M2.61625 0.525635C1.17156 0.525635 0 1.70079 0 3.14188V27.2056C0 28.6467 1.31531 29.9656 2.76 29.9656H6.52625C6.96469 32.5747 9.22875 34.5656 11.96 34.5656C14.6913 34.5656 16.9553 32.5747 17.3938 29.9656H25.9038C27.3448 29.9656 28.52 28.7905 28.52 27.3494V3.19938C28.52 1.72595 27.3592 0.525635 25.9325 0.525635H2.61625ZM30.36 6.96563V29.9656C30.802 32.5711 33.1488 34.5656 35.88 34.5656C38.6113 34.5656 40.8753 32.5711 41.3138 29.9656H43.24C44.6847 29.9656 46 28.6503 46 27.2056V18.3506C46 16.4999 44.6667 14.6095 44.505 14.3831L40.6813 9.26563C39.8044 8.20907 38.428 6.96563 36.8 6.96563H30.36ZM34.96 11.5656H40.1063L43.0388 15.4756C43.3514 15.9177 44.16 17.2725 44.16 18.3506V18.9256H34.96C34.04 18.9256 33.12 18.0056 33.12 17.0856V13.4056C33.12 12.3886 34.04 11.5656 34.96 11.5656ZM11.96 25.3656C13.9905 25.3656 15.64 27.0152 15.64 29.0456C15.64 31.0761 13.9905 32.7256 11.96 32.7256C9.92953 32.7256 8.28 31.0761 8.28 29.0456C8.28 27.0152 9.92953 25.3656 11.96 25.3656ZM35.88 25.3656C37.9105 25.3656 39.56 27.0152 39.56 29.0456C39.56 31.0761 37.9105 32.7256 35.88 32.7256C33.8495 32.7256 32.2 31.0761 32.2 29.0456C32.2 27.0152 33.8495 25.3656 35.88 25.3656Z' fill='#344C69'/>
+</svg>"
+
+'Visual Measure'[Category Name - Product - Tooltip - Product] = 
+SWITCH (
+    TRUE (),
+    MAX ( 'Product Category Field'[Product Category Field] ) = "Product",
+        CALCULATE (
+            MAX ( 'Category'[Category Name] ),
+            TREATAS ( VALUES ( 'Product'[Category Id] ), Category[Category Id] )
+        ),
+    MAX ( 'Product Category Field'[Product Category Field] ) = "Category", SELECTEDVALUE ( Category[Category Name] )
+)
+
+'Visual Measure'[Cohort Metric - Background Color - Matrix - Retention] = 
+VAR __FormattingMode =
+    SELECTEDVALUE ( 'Cohort Formatting Mode'[ID] )
+VAR __Min =
+    CALCULATE (
+        MINX (
+            CROSSJOIN (
+                DISTINCT ( 'Calendar'[Month Year] ),
+                DISTINCT ( 'Order'[Months Since First Transaction] )
+            ),
+            [Selected Cohort Metric]
+        ),
+        ALLSELECTED ()
+    )
+VAR __Max =
+    CALCULATE (
+        MAXX (
+            CROSSJOIN (
+                DISTINCT ( 'Calendar'[Month Year] ),
+                DISTINCT ( 'Order'[Months Since First Transaction] )
+            ),
+            [Selected Cohort Metric]
+        ),
+        ALLSELECTED ()
+    )
+VAR __Min_2 =
+    MIN ( __Min, 0 )
+VAR __Span = __Max - __Min_2
+VAR __Norm =
+    DIVIDE ( [Selected Cohort Metric] - __Min_2, __Span )
+VAR __Lightness =
+    100
+        - ROUND ( __Norm * 80, 0 )
+VAR __Hue = 210
+VAR __Saturation = 45
+VAR __Color = "hsla(" & __Hue & "," & __Saturation & "%," & __Lightness & "%," & "0.9)"
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        __FormattingMode = 1, __Color,
+        __FormattingMode = 2, __Color,
+        __FormattingMode = 3, [Transparent Color],
+        __Color
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Cohort Metric - Font Color - Matrix - Retention] = 
+VAR __FormattingMode =
+    SELECTEDVALUE ( 'Cohort Formatting Mode'[ID] )
+VAR __Min =
+    CALCULATE (
+        MINX (
+            CROSSJOIN (
+                DISTINCT ( 'Calendar'[Month Year] ),
+                DISTINCT ( 'Order'[Months Since First Transaction] )
+            ),
+            [Selected Cohort Metric]
+        ),
+        ALLSELECTED ()
+    )
+VAR __Max =
+    CALCULATE (
+        MAXX (
+            CROSSJOIN (
+                DISTINCT ( 'Calendar'[Month Year] ),
+                DISTINCT ( 'Order'[Months Since First Transaction] )
+            ),
+            [Selected Cohort Metric]
+        ),
+        ALLSELECTED ()
+    )
+VAR __Min_2 =
+    MIN ( __Min, 0 )
+VAR __Span = __Max - __Min_2
+VAR __Norm =
+    DIVIDE ( [Selected Cohort Metric] - __Min_2, __Span )
+VAR __Lightness =
+    100
+        - ROUND ( __Norm * 80, 0 )
+VAR __FontColor =
+    IF ( __Lightness < 56, "#FFFFFF", "#223144" )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        __FormattingMode = 1, __FontColor,
+        __FormattingMode = 2, [Transparent Color],
+        __FormattingMode = 3, [Standard Blue],
+        [Standard Blue]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Cohort Metric - Title - Matrix - Retention] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Cohort Metric'[Cohort Metric] ) = "Cohort Performance", "Cohort Performance",
+        MAX ( 'Cohort Metric'[Cohort Metric] ) = "Retention Rate", "Retention Rate"
+    )
+VAR __SelectedFormattingMode =
+    SELECTEDVALUE ( 'Cohort Formatting Mode'[ID] )
+VAR __Result = "Monthly " & __SelectedMetric
+RETURN
+    __Result
+
+'Visual Measure'[Cumulative Product Metric - Pareto Category - Product] = 
+IF (
+    ISINSCOPE ( Category[Category Name] ),
+    CALCULATE (
+        [Selected Product Metric],
+        TOPN (
+            [Product Metric Rank - Pareto Category - Product],
+            ALLSELECTED ( Category[Category Name] ),
+            [Selected Product Metric],
+        )
+    ),
+    CALCULATE ( [Selected Product Metric], ALLSELECTED ( Category[Category Name] ) )
+)
+
+'Visual Measure'[Cumulative Product Metric % - Axis - Pareto Category - Product] = 
+VAR __MaxValue =
+    MAXX (
+        VALUES ( Category[Category Name] ),
+        [Cumulative Product Metric % - Pareto Category - Product]
+    )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[Cumulative Product Metric % - Pareto Category - Product] = 
+DIVIDE (
+    [Cumulative Product Metric - Pareto Category - Product],
+    [Total Product Metric - Pareto Category - Product]
+)
+
+'Visual Measure'[Cumulative Sales Metric - Pareto Seller - Sales] = 
+IF (
+    ISINSCOPE ( Seller[Seller Id] ),
+    CALCULATE (
+        [Selected Sales Metric],
+        TOPN (
+            [Sales Metric Rank - Pareto Seller - Sales],
+            ALLSELECTED ( Seller[Seller Id] ),
+            [Selected Sales Metric],
+        )
+    ),
+    CALCULATE ( [Selected Sales Metric], ALLSELECTED ( Seller[Seller Id] ) )
+)
+
+'Visual Measure'[Cumulative Sales Metric % - Axis - Pareto Seller - Sales] = 
+VAR __MaxValue =
+    MAXX (
+        VALUES ( Seller[Seller Id] ),
+        [Cumulative Sales Metric % - Pareto Seller - Sales]
+    )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[Cumulative Sales Metric % - Pareto Seller - Sales] = 
+DIVIDE (
+    [Cumulative Sales Metric - Pareto Seller - Sales],
+    [Total Sales Metric - Pareto Seller - Sales]
+)
+
+'Visual Measure'[Current Parameter Date Granularity] = 
+MAX ( 'Parameter Date'[Parameter Date] )
+
+'Visual Measure'[Customer Delivery Time Icon] = 
+"data:image/svg+xml;utf8," & "<svg width='46' height='46' viewBox='0 0 46 46' fill='none' xmlns='http://www.w3.org/2000/svg'>
+<path d='M24.9154 30.6665H21.082V42.1665H24.9154V30.6665Z' fill='#344C69'/>
+<path d='M30.668 5.75022V9.79438L23.0013 3.22021L7.66797 16.3685V42.1669H17.2513V26.8335H28.7513V42.1669H38.3346V16.3685L34.5013 13.091V5.75022H30.668Z' fill='#344C69'/>
+</svg>
+"
+
+'Visual Measure'[Customer Lifetime Value - Subtitle - Card - Customer] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Customer Lifetime Value (CLV) (Payments)] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Customer Lifetime Value (CLV) (Payments)] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Customer Lifetime Value (CLV) (Payments)], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Customer Lifetime Value (CLV) (Payments)], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Customer Lifetime Value (CLV) (Payments)] ), "-",
+        [LM MOM % Customer Lifetime Value (CLV) (Payments)] = 0, "No MoM Change",
+        [LM MOM % Customer Lifetime Value (CLV) (Payments)] < 0, __Negative,
+        [LM MOM % Customer Lifetime Value (CLV) (Payments)] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Customer Lifetime Value (CLV) - Sparkline - Card - Customer] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Customer Lifetime Value (CLV) (Payments)] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Customer Lifetime Value (CLV) (Payments)] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT (
+                50
+                    * DIVIDE (
+                        [Customer Lifetime Value (CLV) (Payments)] - YMinValue,
+                        YMaxValue - YMinValue
+                    )
+            )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Customer Lifetime Value (CLV) - Title Color - Card - Customer] = 
+SWITCH (
+    TRUE (),
+    [LM MOM % Customer Lifetime Value (CLV) (Payments)] > 0, [Positive Color],
+    [LM MOM % Customer Lifetime Value (CLV) (Payments)] < 0, [Negative Color]
+)
+
+'Visual Measure'[Customers - Axis - Line Chart - Retention] = 
+VAR __MaxValue =
+    MAXX ( VALUES ( 'Calendar'[Start of Month] ), [Active Customers] )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[Cutoff Cumulative Product Metric - Pareto Category - Product] = 
+VAR __ClosestCategory = [Cutoff Product Metric Category - Pareto Category - Product]
+VAR __Result =
+    IF (
+        SELECTEDVALUE ( Category[Category Name] ) = __ClosestCategory,
+        [Cumulative Product Metric - Pareto Category - Product],
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Cutoff Cumulative Sales Metric - Pareto Seller - Sales] = 
+VAR __ClosestSeller = [Cutoff Sales Metric Seller - Pareto Seller - Sales]
+VAR __Result =
+    IF (
+        SELECTEDVALUE ( Seller[Seller Id] ) = __ClosestSeller,
+        [Cumulative Sales Metric - Pareto Seller - Sales],
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Cutoff Product Metric % - Pareto Category - Product] = 
+VAR __ClosestCategory = [Cutoff Product Metric Category - Pareto Category - Product]
+VAR __Result =
+    IF (
+        SELECTEDVALUE ( Category[Category Name] ) = __ClosestCategory,
+        [Cumulative Product Metric % - Pareto Category - Product],
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Cutoff Product Metric Category - Pareto Category - Product] = 
+VAR __TargetPercentage = [Product Metric Pareto Value]
+VAR __ClosestCustomer =
+    TOPN (
+        1,
+        ADDCOLUMNS (
+            SUMMARIZE ( ALLSELECTED ( 'Category' ), Category[Category Name] ),
+            "CumulativeProductMetricPercent", [Cumulative Product Metric % - Pareto Category - Product],
+            "Difference",
+                ABS ( [Cumulative Product Metric % - Pareto Category - Product] - __TargetPercentage )
+        ),
+        [Difference], ASC
+    )
+VAR __Result =
+    MAXX ( __ClosestCustomer, Category[Category Name] )
+RETURN
+    __Result
+
+'Visual Measure'[Cutoff Product Metric Rank - Pareto Category - Product] = 
+VAR __ClosestCategory = [Cutoff Product Metric Category - Pareto Category - Product]
+VAR __Result =
+    IF (
+        SELECTEDVALUE ( Category[Category Name] ) = __ClosestCategory,
+        [Product Metric Rank - Pareto Category - Product],
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Cutoff Sales Metric % - Pareto Seller - Sales] = 
+VAR __ClosestSeller = [Cutoff Sales Metric Seller - Pareto Seller - Sales]
+VAR __Result =
+    IF (
+        SELECTEDVALUE ( Seller[Seller Id] ) = __ClosestSeller,
+        [Cumulative Sales Metric % - Pareto Seller - Sales],
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Cutoff Sales Metric Rank - Pareto Seller - Sales] = 
+VAR __ClosestSeller = [Cutoff Sales Metric Seller - Pareto Seller - Sales]
+VAR __Result =
+    IF (
+        SELECTEDVALUE ( Seller[Seller Id] ) = __ClosestSeller,
+        [Sales Metric Rank - Pareto Seller - Sales],
+        BLANK ()
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Cutoff Sales Metric Seller - Pareto Seller - Sales] = 
+VAR __TargetPercentage = [Sales Metric Pareto Value]
+VAR __ClosestCustomer =
+    TOPN (
+        1,
+        ADDCOLUMNS (
+            SUMMARIZE ( ALLSELECTED ( 'Seller' ), Seller[Seller Id] ),
+            "CumulativeSalesMetricPercent", [Cumulative Sales Metric % - Pareto Seller - Sales],
+            "Difference", ABS ( [Cumulative Sales Metric % - Pareto Seller - Sales] - __TargetPercentage )
+        ),
+        [Difference], ASC
+    )
+VAR __Result =
+    MAXX ( __ClosestCustomer, Seller[Seller Id] )
+RETURN
+    __Result
+
+'Visual Measure'[Date Range - Granurality - Subtitle] = 
+VAR __DateRange = [Selected Date Range]
+VAR __Granularity =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", "Daily",
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", "Monthly",
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", "Quarterly",
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", "Yearly"
+    )
+VAR __Result = "Date Range: " & __DateRange & ", " & __Granularity & " Granularity"
+RETURN
+    __Result
+
+'Visual Measure'[Date Range - Monthly Granurality - Subtitle] = 
+VAR __DateRange = [Selected Date Range]
+VAR __Result = "Date Range: " & __DateRange & ", " & " Monthly Granularity"
+RETURN
+    __Result
+
+'Visual Measure'[Delivery Metric - Axis - Line Chart - Delivery] = 
+VAR __MaxValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MAXX ( VALUES ( 'Calendar'[Date] ), [Selected Delivery Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", MAXX ( VALUES ( 'Calendar'[Start of Month] ), [Selected Delivery Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", MAXX ( VALUES ( 'Calendar'[Start of Quarter] ), [Selected Delivery Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", MAXX ( VALUES ( 'Calendar'[Start of Year] ), [Selected Delivery Metric] )
+    )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[Delivery Metric - Label Color - Line Chart - Delivery] = 
+VAR __CurrentDateParameterValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", SELECTEDVALUE ( 'Calendar'[Date] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", SELECTEDVALUE ( 'Calendar'[Start of Month] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", SELECTEDVALUE ( 'Calendar'[Start of Quarter] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", SELECTEDVALUE ( 'Calendar'[Start of Year] )
+    )
+VAR __MaxValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MAXX ( ALLSELECTED ( 'Calendar'[Date] ), [Selected Delivery Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", MAXX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [Selected Delivery Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter",
+            MAXX (
+                ALLSELECTED ( 'Calendar'[Start of Quarter] ),
+                [Selected Delivery Metric]
+            ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", MAXX ( ALLSELECTED ( 'Calendar'[Start of Year] ), [Selected Delivery Metric] )
+    )
+VAR __MinValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MINX ( ALLSELECTED ( 'Calendar'[Date] ), [Selected Delivery Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", MINX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [Selected Delivery Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter",
+            MINX (
+                ALLSELECTED ( 'Calendar'[Start of Quarter] ),
+                [Selected Delivery Metric]
+            ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", MINX ( ALLSELECTED ( 'Calendar'[Start of Year] ), [Selected Delivery Metric] )
+    )
+VAR __Result =
+    IF (
+        [Selected Delivery Metric] = __MaxValue
+            || [Selected Delivery Metric] = __MinValue
+            || __CurrentDateParameterValue = [Start Parameter Date Value]
+            || __CurrentDateParameterValue = [End Parameter Date Value],
+        [Focus Blue],
+        [Transparent Color]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Delivery Metric - Title - Line Chart - Delivery] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Delivery Metric'[Delivery Metric] ) = "Total", "Total Delivery Time",
+        MAX ( 'Delivery Metric'[Delivery Metric] ) = "Approval", "Approval Time",
+        MAX ( 'Delivery Metric'[Delivery Metric] ) = "Carrier", "Carrier Delivery Time",
+        MAX ( 'Delivery Metric'[Delivery Metric] ) = "Customer", "Customer Delivery Time"
+    )
+VAR __Result = __SelectedMetric & " by " & [Current Parameter Date Granularity]
+RETURN
+    __Result
+
+'Visual Measure'[Delivery Time - Axis - Area Chart - Delivery] = 
+VAR __MaxValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MAXX ( VALUES ( 'Calendar'[Date] ), [Average Total Delivery Time (h)] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month",
+            MAXX (
+                VALUES ( 'Calendar'[Start of Month] ),
+                [Average Total Delivery Time (h)]
+            ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter",
+            MAXX (
+                VALUES ( 'Calendar'[Start of Quarter] ),
+                [Average Total Delivery Time (h)]
+            ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", MAXX ( VALUES ( 'Calendar'[Start of Year] ), [Average Total Delivery Time (h)] )
+    )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[Delivery Time - Label Color - Area Chart - Delivery] = 
+VAR __CurrentDateParameterValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", SELECTEDVALUE ( 'Calendar'[Date] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", SELECTEDVALUE ( 'Calendar'[Start of Month] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", SELECTEDVALUE ( 'Calendar'[Start of Quarter] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", SELECTEDVALUE ( 'Calendar'[Start of Year] )
+    )
+VAR __MaxValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MAXX ( ALLSELECTED ( 'Calendar'[Date] ), [Average Total Delivery Time (h)] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month",
+            MAXX (
+                ALLSELECTED ( 'Calendar'[Start of Month] ),
+                [Average Total Delivery Time (h)]
+            ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter",
+            MAXX (
+                ALLSELECTED ( 'Calendar'[Start of Quarter] ),
+                [Average Total Delivery Time (h)]
+            ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year",
+            MAXX (
+                ALLSELECTED ( 'Calendar'[Start of Year] ),
+                [Average Total Delivery Time (h)]
+            )
+    )
+VAR __MinValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MINX ( ALLSELECTED ( 'Calendar'[Date] ), [Average Total Delivery Time (h)] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month",
+            MINX (
+                ALLSELECTED ( 'Calendar'[Start of Month] ),
+                [Average Total Delivery Time (h)]
+            ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter",
+            MINX (
+                ALLSELECTED ( 'Calendar'[Start of Quarter] ),
+                [Average Total Delivery Time (h)]
+            ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year",
+            MINX (
+                ALLSELECTED ( 'Calendar'[Start of Year] ),
+                [Average Total Delivery Time (h)]
+            )
+    )
+VAR __Result =
+    IF (
+        [Average Total Delivery Time (h)] = __MaxValue
+            || [Average Total Delivery Time (h)] = __MinValue
+            || __CurrentDateParameterValue = [Start Parameter Date Value]
+            || __CurrentDateParameterValue = [End Parameter Date Value],
+        [Focus Blue],
+        [Transparent Color]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Delivery Time - Marker Color - Waffle Delivery - Delivery] = 
+VAR __ApprovalTime = [% of Approval Time] * 100
+VAR __CarrierDeliveryTime = [% of Carrier Delivery Time] * 100
+VAR __CustomerDeliveryTime = [% of Customer Delivery Time] * 100
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        MAX ( Waffle[Value] ) > 0
+            && MAX ( Waffle[Value] ) <= __CustomerDeliveryTime, [Standard Blue],
+        MAX ( Waffle[Value] ) > __CustomerDeliveryTime
+            && MAX ( Waffle[Value] ) <= __CustomerDeliveryTime + __CarrierDeliveryTime, [Cambridge Blue],
+        MAX ( Waffle[Value] ) > __CustomerDeliveryTime + __CarrierDeliveryTime
+            && MAX ( Waffle[Value] ) <= __CustomerDeliveryTime + __CarrierDeliveryTime + __ApprovalTime, [Light Grey]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Delivery Time - Title - Area Chart - Delivery] = 
+"Delivery Time Breakdown by " & [Current Parameter Date Granularity]
+
+'Visual Measure'[Delivery Time - Title - Box Plot - Delivery] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Delivery Metric'[Delivery Metric] ) = "Total", "Total Delivery Time",
+        MAX ( 'Delivery Metric'[Delivery Metric] ) = "Approval", "Approval Time",
+        MAX ( 'Delivery Metric'[Delivery Metric] ) = "Carrier", "Carrier Deliver Time",
+        MAX ( 'Delivery Metric'[Delivery Metric] ) = "Customer", "Customer Deliver Time"
+    )
+VAR __Result = __SelectedMetric & " Distribution by Quarter"
+RETURN
+    __Result
+
+'Visual Measure'[Delivery Time Date Title - Date - Tooltip - Delivery] = 
+SWITCH (
+    TRUE (),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Date", FORMAT ( SELECTEDVALUE ( 'Calendar'[Date] ), "DD MMM YYYY" ),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Month", SELECTEDVALUE ( 'Calendar'[Month Year] ),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", SELECTEDVALUE ( 'Calendar'[Quarter Year] ),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Year", SELECTEDVALUE ( 'Calendar'[Year] )
+)
+
+'Visual Measure'[Delivery Time State - Axis - Bar Chart - Delivery] = 
+VAR __MaxValue =
+    MAXX ( ALLSELECTED ( State[State] ), [Average Total Delivery Time (h)] )
+VAR __Result = __MaxValue * 1.4
+RETURN
+    __Result
+
+'Visual Measure'[Delivery Time State - Bar Color - Bar State - Delivery] = 
+VAR __SelectedStatesCount =
+    CALCULATE ( DISTINCTCOUNT ( State[State] ), ALLSELECTED ( State[State] ) )
+VAR __NumberOfTop =
+    IF (
+        __SelectedStatesCount >= 6,
+        3,
+        DIVIDE ( __SelectedStatesCount, 2 ) + MOD ( __SelectedStatesCount, 2 )
+    )
+VAR __StateRankDesc =
+    IF (
+        ISINSCOPE ( State[State] ),
+        RANKX (
+            ALLSELECTED ( State[State] ),
+            [Average Total Delivery Time (h)],
+            ,
+            DESC,
+            DENSE
+        )
+    )
+VAR __StateRankAsc =
+    IF (
+        ISINSCOPE ( State[State] ),
+        RANKX (
+            ALLSELECTED ( State[State] ),
+            [Average Total Delivery Time (h)],
+            ,
+            ASC,
+            DENSE
+        )
+    )
+VAR __Result =
+    IF (
+        ISBLANK ( __SelectedStatesCount )
+            || __SelectedStatesCount <= 1,
+        [Focus Blue],
+        SWITCH (
+            TRUE (),
+            ISBLANK ( __StateRankAsc ), [Light Grey],
+            __StateRankAsc <= __NumberOfTop, [Positive Color],
+            __StateRankDesc <= __NumberOfTop, [Negative Color],
+            [Light Grey]
+        )
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Delivery Time State - Label Color - Bar State - Delivery] = 
+VAR __StateRankDesc =
+    IF (
+        ISINSCOPE ( State[State] ),
+        RANKX ( ALLSELECTED ( State[State] ), [Average Total Delivery Time (h)] )
+    )
+VAR __StateRankAsc =
+    IF (
+        ISINSCOPE ( State[State] ),
+        RANKX ( ALLSELECTED ( State[State] ), [Average Total Delivery Time (h)],, ASC )
+    )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        __StateRankDesc <= 3, [Focus Blue],
+        __StateRankAsc <= 3, [Focus Blue],
+        [Transparent Color]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[End Actual Month Value] = 
+CALCULATE (
+    LASTDATE ( 'Calendar'[Start of Month] ),
+    ALLSELECTED ( 'Calendar' )
+)
+
+'Visual Measure'[End Forecast Month Value] = 
+EDATE ( [End Actual Month Value], 6 )
+
+'Visual Measure'[End Parameter Date Value] = 
+SWITCH (
+    TRUE (),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Date", CALCULATE ( LASTDATE ( 'Calendar'[Date] ), ALLSELECTED ( 'Calendar' ) ),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Month",
+        CALCULATE (
+            LASTDATE ( 'Calendar'[Start of Month] ),
+            ALLSELECTED ( 'Calendar' )
+        ),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter",
+        CALCULATE (
+            LASTDATE ( 'Calendar'[Start of Quarter] ),
+            ALLSELECTED ( 'Calendar' )
+        ),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Year", CALCULATE ( LASTDATE ( 'Calendar'[Start of Year] ), ALLSELECTED ( 'Calendar' ) )
+)
+
+'Visual Measure'[Focus Blue] = 
+"#344C69"
+
+'Visual Measure'[Items per Order - Sparkline - Card - Product] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Items per Order] ) )
+VAR YMaxValue =
+    MAXX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Items per Order] ) ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT ( 50 * DIVIDE ( [Items per Order] - YMinValue, YMaxValue - YMinValue ) )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Items per Order - Subtitle - Card - Product] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Items per Order] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Items per Order] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Items per Order], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Items per Order], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Items per Order] ), "-",
+        [LM MOM % Items per Order] = 0, "No MoM Change",
+        [LM MOM % Items per Order] < 0, __Negative,
+        [LM MOM % Items per Order] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Light Blue] = 
+"#B8C3D1"
+
+'Visual Measure'[Light Grey] = 
+"#C5CACE"
+
+'Visual Measure'[Light Standard Blue] = 
+"#94A6BB"
+
+'Visual Measure'[Negative Color] = 
+"#A61032"
+
+'Visual Measure'[New Customers - Axis - Line Chart - Customer] = 
+VAR __MaxValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MAXX ( VALUES ( 'Calendar'[Date] ), [New Customers (Payments)] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", MAXX ( VALUES ( 'Calendar'[Start of Month] ), [New Customers (Payments)] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", MAXX ( VALUES ( 'Calendar'[Start of Quarter] ), [New Customers (Payments)] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", MAXX ( VALUES ( 'Calendar'[Start of Year] ), [New Customers (Payments)] )
+    )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[New Customers - Background Color - Matrix - Retention] = 
+VAR __FormattingMode =
+    SELECTEDVALUE ( 'Cohort Formatting Mode'[ID] )
+VAR __Min =
+    CALCULATE (
+        MINX (
+            CROSSJOIN (
+                DISTINCT ( 'Calendar'[Month Year] ),
+                DISTINCT ( 'Order'[Months Since First Transaction] )
+            ),
+            [New Customers]
+        ),
+        ALLSELECTED ()
+    )
+VAR __Max =
+    CALCULATE (
+        MAXX (
+            CROSSJOIN (
+                DISTINCT ( 'Calendar'[Month Year] ),
+                DISTINCT ( 'Order'[Months Since First Transaction] )
+            ),
+            [New Customers]
+        ),
+        ALLSELECTED ()
+    )
+VAR __Min_2 =
+    MIN ( __Min, 0 )
+VAR __Span = __Max - __Min_2
+VAR __Norm =
+    DIVIDE ( [New Customers] - __Min_2, __Span )
+VAR __Lightness =
+    100
+        - ROUND ( __Norm * 80, 0 )
+VAR __Hue = 210
+VAR __Saturation = 45
+VAR __Color = "hsla(" & __Hue & "," & __Saturation & "%," & __Lightness & "%," & "0.9)"
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        __FormattingMode = 1, __Color,
+        __FormattingMode = 2, __Color,
+        __FormattingMode = 3, [Transparent Color],
+        __Color
+    )
+RETURN
+    __Result
+
+'Visual Measure'[New Customers - Font Color - Matrix - Retention] = 
+VAR __FormattingMode =
+    SELECTEDVALUE ( 'Cohort Formatting Mode'[ID] )
+VAR __Min =
+    CALCULATE (
+        MINX (
+            CROSSJOIN (
+                DISTINCT ( 'Calendar'[Month Year] ),
+                DISTINCT ( 'Order'[Months Since First Transaction] )
+            ),
+            [New Customers]
+        ),
+        ALLSELECTED ()
+    )
+VAR __Max =
+    CALCULATE (
+        MAXX (
+            CROSSJOIN (
+                DISTINCT ( 'Calendar'[Month Year] ),
+                DISTINCT ( 'Order'[Months Since First Transaction] )
+            ),
+            [New Customers]
+        ),
+        ALLSELECTED ()
+    )
+VAR __Min_2 =
+    MIN ( __Min, 0 )
+VAR __Span = __Max - __Min_2
+VAR __Norm =
+    DIVIDE ( [New Customers] - __Min_2, __Span )
+VAR __Lightness =
+    100
+        - ROUND ( __Norm * 80, 0 )
+VAR __FontColor =
+    IF ( __Lightness < 56, "#FFFFFF", "#223144" )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        __FormattingMode = 1, __FontColor,
+        __FormattingMode = 2, [Transparent Color],
+        __FormattingMode = 3, [Standard Blue],
+        [Standard Blue]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[New Customers - Label Color - Line Chart - Customer] = 
+VAR __CurrentDateParameterValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", SELECTEDVALUE ( 'Calendar'[Date] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", SELECTEDVALUE ( 'Calendar'[Start of Month] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", SELECTEDVALUE ( 'Calendar'[Start of Quarter] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", SELECTEDVALUE ( 'Calendar'[Start of Year] )
+    )
+VAR __MaxValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MAXX ( ALLSELECTED ( 'Calendar'[Date] ), [New Customers (Payments)] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", MAXX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [New Customers (Payments)] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter",
+            MAXX (
+                ALLSELECTED ( 'Calendar'[Start of Quarter] ),
+                [New Customers (Payments)]
+            ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", MAXX ( ALLSELECTED ( 'Calendar'[Start of Year] ), [New Customers (Payments)] )
+    )
+VAR __MinValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MINX ( ALLSELECTED ( 'Calendar'[Date] ), [New Customers (Payments)] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", MINX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [New Customers (Payments)] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter",
+            MINX (
+                ALLSELECTED ( 'Calendar'[Start of Quarter] ),
+                [New Customers (Payments)]
+            ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", MINX ( ALLSELECTED ( 'Calendar'[Start of Year] ), [New Customers (Payments)] )
+    )
+VAR __Result =
+    IF (
+        [New Customers (Payments)] = __MaxValue
+            || [New Customers (Payments)] = __MinValue
+            || __CurrentDateParameterValue = [Start Parameter Date Value]
+            || __CurrentDateParameterValue = [End Parameter Date Value],
+        [Focus Blue],
+        [Transparent Color]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[New Customers - Label Color - Line Chart - Retention] = 
+VAR __CurrentDateParameterValue =
+    SELECTEDVALUE ( 'Calendar'[Start of Month] )
+VAR __MaxValue =
+    MAXX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [New Customers] )
+VAR __MinValue =
+    MINX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [New Customers] )
+VAR __StartDateValue =
+    CALCULATE (
+        FIRSTDATE ( 'Calendar'[Start of Month] ),
+        ALLSELECTED ( 'Calendar' )
+    )
+VAR __EndDateValue =
+    CALCULATE (
+        LASTDATE ( 'Calendar'[Start of Month] ),
+        ALLSELECTED ( 'Calendar' )
+    )
+VAR __Result =
+    IF (
+        [New Customers] = __MaxValue
+            || [New Customers] = __MinValue
+            || __CurrentDateParameterValue = __StartDateValue
+            || __CurrentDateParameterValue = __EndDateValue,
+        [Focus Blue],
+        [Transparent Color]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[New Customers - Title - Line Chart - Customer] = 
+"New Customers by " & [Current Parameter Date Granularity]
+
+'Visual Measure'[New Customers Forecast - Axis - Line Chart - Customer] = 
+VAR __MaxValue =
+    MAXX ( VALUES ( 'Calendar'[Start of Month] ), [New Customers (Payments)] )
+VAR __Result = __MaxValue * 1.65
+RETURN
+    __Result
+
+'Visual Measure'[New Customers Forecast - Label Color - Line Chart - Customer] = 
+VAR __MaxValue =
+    MAXX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [New Customers (Payments)] )
+VAR __MinValue =
+    MINX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [New Customers (Payments)] )
+VAR __Result =
+    IF (
+        [New Customers (Payments)] = __MaxValue
+            || [New Customers (Payments)] = __MinValue
+            || SELECTEDVALUE ( 'Calendar'[Start of Month] ) = [Start Parameter Date Value]
+            || SELECTEDVALUE ( 'Calendar'[Start of Month] ) = [End Parameter Date Value],
+        [Focus Blue],
+        [Transparent Color]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[On-Time Delivery Rate - Sparkline - Card - Product] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used Total Categories along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [On-Time Delivery Rate] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [On-Time Delivery Rate] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT (
+                50
+                    * DIVIDE ( [On-Time Delivery Rate] - YMinValue, YMaxValue - YMinValue )
+            )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[On-Time Delivery Rate - Subtitle - Card - Sales] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % On-Time Delivery Rate] > 0, UNICHAR ( 11165 ),
+        [LM MOM % On-Time Delivery Rate] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % On-Time Delivery Rate], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % On-Time Delivery Rate], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % On-Time Delivery Rate] ), "-",
+        [LM MOM % On-Time Delivery Rate] = 0, "No MoM Change",
+        [LM MOM % On-Time Delivery Rate] < 0, __Negative,
+        [LM MOM % On-Time Delivery Rate] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[On-Time Delivery Rate - Title Color - Card - Sales] = 
+SWITCH (
+    TRUE (),
+    [LM MOM % On-Time Delivery Rate] > 0, [Positive Color],
+    [LM MOM % On-Time Delivery Rate] < 0, [Negative Color]
+)
+
+'Visual Measure'[Order Cancellation Rate - Sparkline - Card - Sales] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Average Order Cancellation Rate] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Average Order Cancellation Rate] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT (
+                50
+                    * DIVIDE ( [Average Order Cancellation Rate] - YMinValue, YMaxValue - YMinValue )
+            )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Payment Rank Title - Payment - Tooltip - Customer] = 
+VAR __Current =
+    SELECTEDVALUE ( 'Payment Type'[Payment Type] )
+VAR __SelectedMetric = [Total Orders (Payments)]
+VAR __Rank =
+    RANKX ( ALL ( 'Payment Type' ), [Total Orders (Payments)],, DESC, DENSE )
+VAR __Result = __Current & " (Rank " & __Rank & ")"
+RETURN
+    __Result
+
+'Visual Measure'[Payment Type - Axis - Tornado Chart - Customer] = 
+VAR __MaxValue =
+    MAXX ( ALLSELECTED ( 'Payment Type'[Payment Type] ), [Total Orders (Payments)] )
+VAR __Result = __MaxValue * 1.2
+RETURN
+    __Result
+
+'Visual Measure'[Payment Type AOV - Description - Column Chart - Customer] = 
+VAR __AverageOrderValue =
+    FORMAT ( [Average Order Value (AOV)], "#,0.00 R$" )
+VAR __Result =
+    "AOV:" & REPT ( " ", 2 ) & __AverageOrderValue
+RETURN
+    __Result
+
+'Visual Measure'[Payment Type AOV Inv - Axis - Tornado Chart - Customer] = 
+VAR __MinValue =
+    MINX (
+        ALLSELECTED ( 'Payment Type'[Payment Type] ),
+        [Average Order Value (AOV) Inverted]
+    )
+VAR __Result = __MinValue * 1.2
+RETURN
+    __Result
+
+'Visual Measure'[Payment Type Orders - Description - Column Chart - Customer] = 
+VAR __Orders =
+    // FORMAT(ROUND(DIVIDE([Total Orders (Payments)], 1000, 0), 0), "#,0") & "k"
+    FORMAT (
+        [Total Orders (Payments)],
+        "# ###"
+    )
+VAR __Result =
+    "Orders:" & REPT ( " ", 2 ) & __Orders
+RETURN
+    __Result
+
+'Visual Measure'[Positive Color] = 
+"#00997A"
+
+'Visual Measure'[Product Metric - Axis - Pareto Category - Product] = 
+VAR __MaxValue =
+    MAXX ( VALUES ( Category[Category Name] ), [Selected Product Metric] )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[Product Metric - Axis - Scatter Product - Product] = 
+VAR __MaxValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product", MAXX ( VALUES ( 'Product'[Product Id] ), [Selected Product Metric] ),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category", MAXX ( VALUES ( Category[Category Name] ), [Selected Product Metric] )
+    )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[Product Metric - Description - Pareto Category - Product] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Metric'[Product Metric] ) = "Revenue", "Revenues",
+        MAX ( 'Product Metric'[Product Metric] ) = "Units Sold", "Units Sold"
+    )
+VAR __CategoriesNumber =
+    IF (
+        [Product Metric Pareto Cutoff Rank - Pareto Category - Product] > 12,
+        "over 12",
+        [Product Metric Pareto Cutoff Rank - Pareto Category - Product]
+    )
+VAR __Result = " of " & __SelectedMetric & " comes from " & __CategoriesNumber & " Categories"
+RETURN
+    __Result
+
+'Visual Measure'[Product Metric - Subtitle - Pareto Category - Product] = 
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Metric'[Product Metric] ) = "Revenue", "Revenues in mBRL, in % | Cumulative Revenues in %",
+        MAX ( 'Product Metric'[Product Metric] ) = "Units Sold", "Units Sold in '000, in % | Cumulative Orders in %"
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Product Metric - Title - Pareto Category - Product] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Metric'[Product Metric] ) = "Revenue", "Revenue",
+        MAX ( 'Product Metric'[Product Metric] ) = "Units Sold", "Units Sold"
+    )
+VAR __Result = "Top 12 Categories by " & __SelectedMetric & " Contribution (Pareto Analysis)"
+RETURN
+    __Result
+
+'Visual Measure'[Product Metric - Title - Scatter Product - Product] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Metric'[Product Metric] ) = "Revenue", "Revenue",
+        MAX ( 'Product Metric'[Product Metric] ) = "Units Sold", "Units Sold"
+    )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product",
+            "Total " & __SelectedMetric & " vs. Product Rating (Highlighting Top 20 Products and Low Ratings)",
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category",
+            "Total " & __SelectedMetric & " vs. Category Rating (Highlighting Top 20 Categories and Low Ratings)"
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Product Metric GT% - Pareto Category - Product] = 
+DIVIDE (
+    [Selected Product Metric],
+    [Total Product Metric - Pareto Category - Product],
+    0
+)
+
+'Visual Measure'[Product Metric Pareto Color - Pareto Category - Product] = 
+IF (
+    [Product Metric Rank - Pareto Category - Product] > [Product Metric Pareto Cutoff Rank - Pareto Category - Product],
+    [Light Grey],
+    [Light Standard Blue]
+)
+
+'Visual Measure'[Product Metric Pareto Cutoff Rank - Pareto Category - Product] = 
+CALCULATE (
+    MAXX (
+        VALUES ( Category[Category Name] ),
+        [Cutoff Product Metric Rank - Pareto Category - Product]
+    ),
+    ALLSELECTED ( Category )
+)
+
+'Visual Measure'[Product Metric Pareto Label Color - Pareto Category - Product] = 
+IF (
+    [Product Metric Rank - Pareto Category - Product] > [Product Metric Pareto Cutoff Rank - Pareto Category - Product],
+    [Light Grey],
+    [Focus Blue]
+)
+
+'Visual Measure'[Product Metric Rank - Pareto Category - Product] = 
+IF (
+    ISINSCOPE ( Category[Category Name] ),
+    RANKX ( ALLSELECTED ( Category[Category Name] ), [Selected Product Metric] )
+)
+
+'Visual Measure'[Product Metric Trend Title - Tooltip - Product] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Metric'[Product Metric] ) = "Revenue", "Revenue",
+        MAX ( 'Product Metric'[Product Metric] ) = "Units Sold", "Units Sold"
+    )
+VAR __Result = "Monthly " & __SelectedMetric & " Trend"
+RETURN
+    __Result
+
+'Visual Measure'[Product Rank Title - Product - Tooltip - Product] = 
+VAR __Current =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product", SELECTEDVALUE ( 'Product'[Product Id] ),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category", SELECTEDVALUE ( Category[Category Name] )
+    )
+VAR __Rank =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product", RANKX ( ALL ( 'Product' ), [Selected Product Metric],, DESC, DENSE ),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category", RANKX ( ALL ( Category ), [Selected Product Metric],, DESC, DENSE )
+    )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product",
+            "Product " & __Current & " (Rank " & __Rank & ")",
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category",
+            __Current & " (Rank " & __Rank & ")"
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Product Rating - Description - Scatter Product - Product] = 
+VAR __WithRatingBelow25 =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product", CALCULATE ( [Total Products], 'Product'[Product Rating] < 2.5 ),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category",
+            COUNTROWS (
+                FILTER (
+                    SUMMARIZE (
+                        Category,
+                        Category[Category Name],
+                        "Average Rating", AVERAGE ( Product[Product Rating] )
+                    ),
+                    [Average Rating] < 2.5
+                )
+            )
+    )
+VAR __WithRatingBelow25Pct =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product", DIVIDE ( __WithRatingBelow25, [Total Products] ),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category", DIVIDE ( __WithRatingBelow25, [Total Categories] )
+    )
+VAR __SelectedField =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product", "Products",
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category", "Categories"
+    )
+VAR __Result =
+    IF (
+        __WithRatingBelow25 = 0,
+        "No " & __SelectedField & " with rating below 2.5",
+        FORMAT ( __WithRatingBelow25Pct, "0.0%" ) & " of " & __SelectedField & " have a rating below 2.5"
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Product Rating - Marker Color - Scatter Product - Product] = 
+VAR __ProductRating =
+    AVERAGE ( 'Product'[Product Rating] )
+VAR __ProductMetricRank =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product",
+            IF (
+                ISINSCOPE ( 'Product'[Product Id] ),
+                RANKX ( ALLSELECTED ( 'Product'[Product Id] ), [Selected Product Metric] )
+            ),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category",
+            IF (
+                ISINSCOPE ( Category[Category Name] ),
+                RANKX ( ALLSELECTED ( Category[Category Name] ), [Selected Product Metric] )
+            )
+    )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        __ProductMetricRank <= 20
+            && __ProductRating < 2.5, [Semi Negative Color],
+        __ProductMetricRank <= 20, [Focus Blue],
+        __ProductRating < 2.5, [Negative Color],
+        [Light Grey]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Product Rating - Reference Line - Scatter Product - Product] = 
+VAR __Rank20ProductOrCategory =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product",
+            CALCULATE (
+                MAX ( 'Product'[Product Id] ),
+                FILTER (
+                    ALLSELECTED ( 'Product'[Product Id] ),
+                    RANKX ( ALLSELECTED ( 'Product'[Product Id] ), [Selected Product Metric] ) = 20
+                )
+            ),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category",
+            CALCULATE (
+                MAX ( Category[Category Name] ),
+                FILTER (
+                    ALLSELECTED ( Category[Category Name] ),
+                    RANKX ( ALLSELECTED ( Category[Category Name] ), [Selected Product Metric] ) = 20
+                )
+            )
+    )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Product",
+            CALCULATE (
+                [Selected Product Metric],
+                'Product'[Product Id] = __Rank20ProductOrCategory
+            ),
+        MAX ( 'Product Category Field'[Product Category Field] ) = "Category",
+            CALCULATE (
+                [Selected Product Metric],
+                Category[Category Name] = __Rank20ProductOrCategory
+            )
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Recovered Customers - Label Color - Line Chart - Retention] = 
+VAR __CurrentDateParameterValue =
+    SELECTEDVALUE ( 'Calendar'[Start of Month] )
+VAR __MaxValue =
+    MAXX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [Recovered Customers] )
+VAR __MinValue =
+    MINX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [Recovered Customers] )
+VAR __StartDateValue =
+    CALCULATE (
+        FIRSTDATE ( 'Calendar'[Start of Month] ),
+        ALLSELECTED ( 'Calendar' )
+    )
+VAR __EndDateValue =
+    CALCULATE (
+        LASTDATE ( 'Calendar'[Start of Month] ),
+        ALLSELECTED ( 'Calendar' )
+    )
+VAR __Result =
+    IF (
+        [Recovered Customers] = __MaxValue
+            || [Recovered Customers] = __MinValue
+            || __CurrentDateParameterValue = __StartDateValue
+            || __CurrentDateParameterValue = __EndDateValue,
+        [Focus Blue],
+        [Transparent Color]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Retention Rate - Sparkline - Card - Customer] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Retention Rate] ) )
+VAR YMaxValue =
+    MAXX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Retention Rate] ) ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT ( 50 * DIVIDE ( [Retention Rate] - YMinValue, YMaxValue - YMinValue ) )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Returning & Recovered Customers - Axis - Line Chart - Retention] = 
+VAR __MaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        [Recovered & Returning Customers]
+    )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[Returning Customers - Label Color - Line Chart - Retention] = 
+VAR __CurrentDateParameterValue =
+    SELECTEDVALUE ( 'Calendar'[Start of Month] )
+VAR __MaxValue =
+    MAXX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [Returning Customers] )
+VAR __MinValue =
+    MINX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [Returning Customers] )
+VAR __StartDateValue =
+    CALCULATE (
+        FIRSTDATE ( 'Calendar'[Start of Month] ),
+        ALLSELECTED ( 'Calendar' )
+    )
+VAR __EndDateValue =
+    CALCULATE (
+        LASTDATE ( 'Calendar'[Start of Month] ),
+        ALLSELECTED ( 'Calendar' )
+    )
+VAR __Result =
+    IF (
+        [Returning Customers] = __MaxValue
+            || [Returning Customers] = __MinValue
+            || __CurrentDateParameterValue = __StartDateValue
+            || __CurrentDateParameterValue = __EndDateValue,
+        [Focus Blue],
+        [Transparent Color]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Review Score - Title - Area Chart - Product] = 
+"Order Review Scores by " & [Current Parameter Date Granularity]
+
+'Visual Measure'[Sales Metric - Axis - Line Chart - Sales] = 
+VAR __MaxValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MAXX ( VALUES ( 'Calendar'[Date] ), [Selected Sales Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", MAXX ( VALUES ( 'Calendar'[Start of Month] ), [Selected Sales Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", MAXX ( VALUES ( 'Calendar'[Start of Quarter] ), [Selected Sales Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", MAXX ( VALUES ( 'Calendar'[Start of Year] ), [Selected Sales Metric] )
+    )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric - Axis - Pareto Seller - Sales] = 
+VAR __MaxValue =
+    MAXX ( VALUES ( Seller[Seller Id] ), [Selected Sales Metric] )
+VAR __Result = __MaxValue * 1.15
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric - Description - Pareto Seller - Sales] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Revenue", "Revenues",
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Orders", "Orders"
+    )
+VAR __SellersNumber =
+    IF (
+        [Sales Metric Pareto Cutoff Rank - Pareto Seller - Sales] > 20,
+        "over 20",
+        [Sales Metric Pareto Cutoff Rank - Pareto Seller - Sales]
+    )
+VAR __Result = " of " & __SelectedMetric & " comes from " & __SellersNumber & " Sellers"
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric - Label Color - Line Chart - Sales] = 
+VAR __CurrentDateParameterValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", SELECTEDVALUE ( 'Calendar'[Date] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", SELECTEDVALUE ( 'Calendar'[Start of Month] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", SELECTEDVALUE ( 'Calendar'[Start of Quarter] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", SELECTEDVALUE ( 'Calendar'[Start of Year] )
+    )
+VAR __MaxValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MAXX ( ALLSELECTED ( 'Calendar'[Date] ), [Selected Sales Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", MAXX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [Selected Sales Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", MAXX ( ALLSELECTED ( 'Calendar'[Start of Quarter] ), [Selected Sales Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", MAXX ( ALLSELECTED ( 'Calendar'[Start of Year] ), [Selected Sales Metric] )
+    )
+VAR __MinValue =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Date", MINX ( ALLSELECTED ( 'Calendar'[Date] ), [Selected Sales Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Month", MINX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [Selected Sales Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter", MINX ( ALLSELECTED ( 'Calendar'[Start of Quarter] ), [Selected Sales Metric] ),
+        MAX ( 'Parameter Date'[Parameter Date] ) = "Year", MINX ( ALLSELECTED ( 'Calendar'[Start of Year] ), [Selected Sales Metric] )
+    )
+VAR __Result =
+    IF (
+        [Selected Sales Metric] = __MaxValue
+            || [Selected Sales Metric] = __MinValue
+            || __CurrentDateParameterValue = [Start Parameter Date Value]
+            || __CurrentDateParameterValue = [End Parameter Date Value],
+        [Focus Blue],
+        [Transparent Color]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric - Subtitle - Pareto Seller - Sales] = 
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Revenue", "Revenues in mBRL, in % | Cumulative Revenues in %",
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Orders", "Orders in ', in % | Cumulative Orders in %"
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric - Title - Line Chart - Sales] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Revenue", "Revenue",
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Orders", "Orders"
+    )
+VAR __Result = "Total " & __SelectedMetric & " by " & [Current Parameter Date Granularity]
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric - Title - Pareto Seller - Sales] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Revenue", "Revenue",
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Orders", "Orders"
+    )
+VAR __Result = "Top 20 Sellers contributing the most to Total " & __SelectedMetric & ", with cumulative percentages shown by the line."
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric Forecast - Axis - Line Chart - Sales] = 
+VAR __MaxValue =
+    MAXX ( VALUES ( 'Calendar'[Start of Month] ), [Selected Sales Metric] )
+VAR __Result = __MaxValue * 1.65
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric Forecast - Label Color - Line Chart - Sales] = 
+VAR __MaxValue =
+    MAXX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [Selected Sales Metric] )
+VAR __MinValue =
+    MINX ( ALLSELECTED ( 'Calendar'[Start of Month] ), [Selected Sales Metric] )
+VAR __Result =
+    IF (
+        [Selected Sales Metric] = __MaxValue
+            || [Selected Sales Metric] = __MinValue
+            || SELECTEDVALUE ( 'Calendar'[Start of Month] ) = [Start Parameter Date Value]
+            || SELECTEDVALUE ( 'Calendar'[Start of Month] ) = [End Parameter Date Value],
+        [Focus Blue],
+        [Transparent Color]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric GT% - Pareto Seller - Sales] = 
+DIVIDE (
+    [Selected Sales Metric],
+    [Total Sales Metric - Pareto Seller - Sales],
+    0
+)
+
+'Visual Measure'[Sales Metric Pareto Color - Pareto Seller - Sales] = 
+IF (
+    [Sales Metric Rank - Pareto Seller - Sales] > [Sales Metric Pareto Cutoff Rank - Pareto Seller - Sales],
+    [Light Grey],
+    [Light Standard Blue]
+)
+
+'Visual Measure'[Sales Metric Pareto Cutoff Rank - Pareto Seller - Sales] = 
+CALCULATE (
+    MAXX (
+        VALUES ( Seller[Seller Id] ),
+        [Cutoff Sales Metric Rank - Pareto Seller - Sales]
+    ),
+    ALLSELECTED ( Seller )
+)
+
+'Visual Measure'[Sales Metric Pareto Label Color - Pareto Seller - Sales] = 
+IF (
+    [Sales Metric Rank - Pareto Seller - Sales] > [Sales Metric Pareto Cutoff Rank - Pareto Seller - Sales],
+    [Light Grey],
+    [Focus Blue]
+)
+
+'Visual Measure'[Sales Metric Rank - Pareto Seller - Sales] = 
+IF (
+    ISINSCOPE ( Seller[Seller Id] ),
+    RANKX ( ALLSELECTED ( Seller[Seller Id] ), [Selected Sales Metric] )
+)
+
+'Visual Measure'[Sales Metric State - Axis - Bar State - Sales] = 
+VAR __MaxValue =
+    MAXX ( ALLSELECTED ( State[State] ), [Selected Sales Metric] )
+VAR __Result = __MaxValue * 1.2
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric State - Bar Color - Bar State - Sales] = 
+VAR __StateRank =
+    IF (
+        ISINSCOPE ( State[State] ),
+        RANKX ( ALLSELECTED ( State[State] ), [Selected Sales Metric] )
+    )
+VAR __Result =
+    IF ( __StateRank <= 3, [Focus Blue], [Light Grey] )
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric State - Label Color - Bar State - Sales] = 
+VAR __StateRank =
+    IF (
+        ISINSCOPE ( State[State] ),
+        RANKX ( ALLSELECTED ( State[State] ), [Selected Sales Metric] )
+    )
+VAR __Result =
+    IF ( __StateRank <= 3, [Focus Blue], [Transparent Color] )
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric State - Title - Bar State - Sales] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Revenue", "Revenue",
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Orders", "Orders"
+    )
+VAR __Result = "Total " & __SelectedMetric & " Distribution by State"
+RETURN
+    __Result
+
+'Visual Measure'[Sales Metric Trend Title - Tooltip - Sales] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Revenue", "Revenue",
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Orders", "Orders"
+    )
+VAR __Result = "Monthly " & __SelectedMetric & " Trend"
+RETURN
+    __Result
+
+'Visual Measure'[Selected Cohort Metric] = 
+SWITCH (
+    TRUE (),
+    MAX ( 'Cohort Metric'[Cohort Metric] ) = "Cohort Performance", [Cohort Performance],
+    MAX ( 'Cohort Metric'[Cohort Metric] ) = "Retention Rate", [Retention Rate]
+)
+
+'Visual Measure'[Selected Date Range] = 
+VAR __MinDate =
+    FORMAT ( MIN ( 'Calendar'[Date] ), "mmm'yy" )
+VAR __MaxDate =
+    FORMAT ( MAX ( 'Calendar'[Date] ), "mmm'yy" )
+VAR __MinDate2 =
+    MIN ( 'Calendar'[Date] )
+VAR __MaxDate2 =
+    MAX ( 'Calendar'[Date] )
+VAR __TotalMonths =
+    DATEDIFF ( __MinDate2, __MaxDate2, MONTH ) + 1
+VAR __SelectedMonthsCount =
+    COUNTROWS ( VALUES ( 'Calendar'[Month Year] ) )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        __MaxDate = __MinDate, __MaxDate,
+        __TotalMonths <> __SelectedMonthsCount, "Multiple periods",
+        __MinDate & " - " & __MaxDate
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Selected Delivery Metric] = 
+SWITCH (
+    TRUE (),
+    MAX ( 'Delivery Metric'[Delivery Metric] ) = "Total", [Average Total Delivery Time (h)],
+    MAX ( 'Delivery Metric'[Delivery Metric] ) = "Approval", [Average Approval Time (h)],
+    MAX ( 'Delivery Metric'[Delivery Metric] ) = "Carrier", [Average Carrier Delivery Time (h)],
+    MAX ( 'Delivery Metric'[Delivery Metric] ) = "Customer", [Average Customer Delivery Time (h)]
+)
+
+'Visual Measure'[Selected Product Metric] = 
+SWITCH (
+    TRUE (),
+    MAX ( 'Product Metric'[Product Metric] ) = "Revenue", [Total Revenue (Payments)],
+    MAX ( 'Product Metric'[Product Metric] ) = "Units Sold", [Total Ordered Products]
+)
+
+'Visual Measure'[Selected Sales Metric] = 
+SWITCH (
+    TRUE (),
+    MAX ( 'Sales Metric'[Sales Metric] ) = "Revenue", [Total Revenue (Payments)],
+    MAX ( 'Sales Metric'[Sales Metric] ) = "Orders", [Total Orders]
+)
+
+'Visual Measure'[Seller Rank Title - Seller - Tooltip - Sales] = 
+VAR __Current =
+    SELECTEDVALUE ( Seller[Seller Id] )
+VAR __Rank =
+    RANKX ( ALL ( Seller ), [Selected Sales Metric],, DESC, DENSE )
+VAR __Result = "Seller " & __Current & " (Rank " & __Rank & ")"
+RETURN
+    __Result
+
+'Visual Measure'[Seller Rating - Description - Scatter Seller - Sales] = 
+VAR __SellersWithRatingBelow25 =
+    CALCULATE ( [Total Sellers], Seller[Seller Rating] < 2.5 )
+VAR __SellersWithRatingBelow25Pct =
+    DIVIDE ( __SellersWithRatingBelow25, [Total Sellers] )
+VAR __Result =
+    IF (
+        __SellersWithRatingBelow25 = 0,
+        "No Sellers with rating below 2.5",
+        FORMAT ( __SellersWithRatingBelow25Pct, "0.0%" ) & " of Sellers have a rating below 2.5"
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Seller Rating - Marker Color - Scatter Seller - Sales] = 
+VAR __SellerRating =
+    SELECTEDVALUE ( Seller[Seller Rating] )
+VAR __SellerSalesMetricRank =
+    IF (
+        ISINSCOPE ( Seller[Seller Id] ),
+        RANKX ( ALLSELECTED ( Seller[Seller Id] ), [Selected Sales Metric] )
+    )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        __SellerSalesMetricRank <= 20
+            && __SellerRating < 2.5, [Semi Negative Color],
+        __SellerSalesMetricRank <= 20, [Focus Blue],
+        __SellerRating < 2.5, [Negative Color],
+        [Light Grey]
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Seller Rating - Reference Line - Scatter Seller - Sales] = 
+VAR __Rank20Seller =
+    CALCULATE (
+        MAX ( Seller[Seller Id] ),
+        FILTER (
+            ALLSELECTED ( Seller[Seller Id] ),
+            RANKX ( ALLSELECTED ( Seller[Seller Id] ), [Selected Sales Metric] ) = 20
+        )
+    )
+VAR __Result =
+    CALCULATE ( [Selected Sales Metric], Seller[Seller Id] = __Rank20Seller )
+RETURN
+    __Result
+
+'Visual Measure'[Seller Rating - Title - Scatter Seller - Sales] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Revenue", "Revenue",
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Orders", "Orders"
+    )
+VAR __Result = "Total " & __SelectedMetric & "  vs. Seller Rating (Highlighting Top 20 Sellers and Low Ratings)"
+RETURN
+    __Result
+
+'Visual Measure'[Semi Negative Color] = 
+"#E05600"
+
+'Visual Measure'[Standard Blue] = 
+"#4D6A8D"
+
+'Visual Measure'[Standard Grey] = 
+"#6D7A84"
+
+'Visual Measure'[Start Parameter Date Value] = 
+SWITCH (
+    TRUE (),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Date", CALCULATE ( FIRSTDATE ( 'Calendar'[Date] ), ALLSELECTED ( 'Calendar' ) ),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Month",
+        CALCULATE (
+            FIRSTDATE ( 'Calendar'[Start of Month] ),
+            ALLSELECTED ( 'Calendar' )
+        ),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Quarter",
+        CALCULATE (
+            FIRSTDATE ( 'Calendar'[Start of Quarter] ),
+            ALLSELECTED ( 'Calendar' )
+        ),
+    MAX ( 'Parameter Date'[Parameter Date] ) = "Year",
+        CALCULATE (
+            FIRSTDATE ( 'Calendar'[Start of Year] ),
+            ALLSELECTED ( 'Calendar' )
+        )
+)
+
+'Visual Measure'[State Rank Title - State - Tooltip - Customer] = 
+VAR __Current =
+    SELECTEDVALUE ( State[State] )
+VAR __SelectedMetric = [Total Customers (Payments)]
+VAR __Rank =
+    RANKX ( ALL ( State ), [Total Customers (Payments)],, DESC, DENSE )
+VAR __Result = __Current & " (Rank " & __Rank & ")"
+RETURN
+    __Result
+
+'Visual Measure'[State Rank Title - State - Tooltip - Delivery] = 
+VAR __Current =
+    SELECTEDVALUE ( State[State] )
+VAR __SelectedMetric = [Average Total Delivery Time (h)]
+VAR __Rank =
+    RANKX ( ALL ( State ), [Average Total Delivery Time (h)],, ASC, DENSE )
+VAR __Result = __Current & " (Rank " & __Rank & ")"
+RETURN
+    __Result
+
+'Visual Measure'[State Rank Title - State - Tooltip - Sales] = 
+VAR __Current =
+    SELECTEDVALUE ( State[State] )
+VAR __SelectedMetric = [Selected Sales Metric]
+VAR __Rank =
+    RANKX ( ALL ( State ), [Selected Sales Metric],, DESC, DENSE )
+VAR __Result = __Current & " (Rank " & __Rank & ")"
+RETURN
+    __Result
+
+'Visual Measure'[Top 3 Categories - State - Tooltip - Sales] = 
+VAR __SelectedMetric =
+    SWITCH (
+        TRUE (),
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Revenue", "Revenue",
+        MAX ( 'Sales Metric'[Sales Metric] ) = "Orders", "Orders"
+    )
+VAR __TopCategories =
+    TOPN (
+        3,
+        SUMMARIZE (
+            ALL ( Category ),
+            Category[Category Name],
+            "Sales", [Selected Sales Metric]
+        ),
+        [Sales], DESC
+    )
+VAR __Format =
+    SWITCH (
+        TRUE (),
+        __SelectedMetric = "Revenue", "R$ # ### ###",
+        __SelectedMetric = "Orders", "# ### ###"
+    )
+VAR __FormattedList =
+    CONCATENATEX (
+        __TopCategories,
+        "• " & Category[Category Name] & ": "
+            & FORMAT ( [Sales], __Format ),
+        UNICHAR ( 10 ),
+        [Sales], DESC
+    )
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        __SelectedMetric = "Revenue",
+            "Top 3 Categories by State Revenue:" & UNICHAR ( 10 ) & __FormattedList,
+        __SelectedMetric = "Orders",
+            "Top 3 Categories by State Orders:" & UNICHAR ( 10 ) & __FormattedList
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Top Customer Segment - State - Tooltip] = 
+VAR __TopSegment =
+    TOPN (
+        1,
+        SUMMARIZE (
+            'Customer Segment',
+            'Customer Segment'[Segment],
+            "CustomerCount", [Total Customers]
+        ),
+        [CustomerCount], DESC
+    )
+VAR __Result =
+    MAXX ( __TopSegment, 'Customer Segment'[Segment] )
+RETURN
+    __Result
+
+'Visual Measure'[Total Categories - Sparkline - Card - Product] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used Total Categories along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Total Categories] ) )
+VAR YMaxValue =
+    MAXX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Total Categories] ) ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT ( 50 * DIVIDE ( [Total Categories] - YMinValue, YMaxValue - YMinValue ) )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Total Categories - Subtitle - Card - Product] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Total Categories] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Total Categories] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Categories], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Categories], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Total Categories] ), "-",
+        [LM MOM % Total Categories] = 0, "No MoM Change",
+        [LM MOM % Total Categories] < 0, __Negative,
+        [LM MOM % Total Categories] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Total Customers - Sparkline - Card - Customer] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Total Customers (Payments)] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Total Customers (Payments)] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT (
+                50
+                    * DIVIDE ( [Total Customers (Payments)] - YMinValue, YMaxValue - YMinValue )
+            )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Total Customers - Subtitle - Card - Customer] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Total Customers (Payments)] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Total Customers (Payments)] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Customers (Payments)], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Customers (Payments)], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Total Customers (Payments)] ), "-",
+        [LM MOM % Total Customers (Payments)] = 0, "No MoM Change",
+        [LM MOM % Total Customers (Payments)] < 0, __Negative,
+        [LM MOM % Total Customers (Payments)] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Total Customers - Title Color - Card - Customer] = 
+SWITCH (
+    TRUE (),
+    [LM MOM % Total Customers (Payments)] > 0, [Positive Color],
+    [LM MOM % Total Customers (Payments)] < 0, [Negative Color]
+)
+
+'Visual Measure'[Total Customers State - Axis - Bar State - Customer] = 
+VAR __MaxValue =
+    MAXX ( ALLSELECTED ( State[State] ), [Total Customers (Payments)] )
+VAR __Result = __MaxValue * 1.2
+RETURN
+    __Result
+
+'Visual Measure'[Total Customers State - Bar Color - Bar State - Customer] = 
+VAR __StateRank =
+    IF (
+        ISINSCOPE ( State[State] ),
+        RANKX ( ALLSELECTED ( State[State] ), [Total Customers (Payments)] )
+    )
+VAR __Result =
+    IF ( __StateRank <= 3, [Focus Blue], [Light Grey] )
+RETURN
+    __Result
+
+'Visual Measure'[Total Customers State - Label Color - Bar State - Customer] = 
+VAR __StateRank =
+    IF (
+        ISINSCOPE ( State[State] ),
+        RANKX ( ALLSELECTED ( State[State] ), [Total Customers (Payments)] )
+    )
+VAR __Result =
+    IF ( __StateRank <= 3, [Focus Blue], [Transparent Color] )
+RETURN
+    __Result
+
+'Visual Measure'[Total Delivery Time Icon] = 
+"data:image/svg+xml;utf8," & "<svg width='46' height='46' viewBox='0 0 46 46' fill='none' xmlns='http://www.w3.org/2000/svg'>
+<path d='M44.0846 22.9998C44.0846 23.6793 44.0524 24.3513 43.9896 25.0143C42.9036 23.9277 41.6321 23.0267 40.2266 22.3625C39.8914 13.1381 32.3077 5.76293 23.0013 5.76293C13.4816 5.76293 5.76439 13.4802 5.76439 22.9998C5.76439 32.3062 13.1396 39.8899 22.364 40.2251C23.0281 41.6306 23.9292 42.9021 25.0157 43.9881C24.3527 44.051 23.6808 44.0832 23.0013 44.0832C11.3573 44.0832 1.91797 34.6438 1.91797 22.9998C1.91797 11.3558 11.3573 1.9165 23.0013 1.9165C34.6452 1.9165 44.0846 11.3558 44.0846 22.9998Z' fill='#344C69'/>
+<path d='M24.9154 22.7725L26.5303 23.7049C25.461 24.4955 24.5132 25.4414 23.7205 26.509L22.0737 25.5581C21.7408 25.3659 21.4874 25.0889 21.3249 24.7702C21.082 24.3943 21.082 23.8947 21.082 23.8947V11.5002C21.082 10.4416 21.9401 9.5835 22.9987 9.5835C24.0573 9.5835 24.9154 10.4416 24.9154 11.5002V22.7725Z' fill='#344C69'/>
+<path d='M29.3113 33.9386C30.0598 33.1901 31.2734 33.1901 32.0219 33.9386L33.2507 35.1673L36.8906 31.5274C37.6393 30.7789 38.8527 30.7789 39.6012 31.5274C40.3498 32.2761 40.3498 33.4895 39.6012 34.2381L34.7324 39.1069C34.5668 39.2725 34.3786 39.4015 34.1776 39.4936C33.4435 39.923 32.485 39.8229 31.8555 39.1933L29.3113 36.6491C28.5629 35.9007 28.5629 34.687 29.3113 33.9386Z' fill='#344C69'/>
+<path fill-rule='evenodd' clip-rule='evenodd' d='M34.5 46C40.8513 46 46 40.8513 46 34.5C46 28.1487 40.8513 23 34.5 23C28.1487 23 23 28.1487 23 34.5C23 40.8513 28.1487 46 34.5 46ZM34.5 42.2014C30.2467 42.2014 26.7986 38.7533 26.7986 34.5C26.7986 30.2467 30.2467 26.7986 34.5 26.7986C38.7533 26.7986 42.2014 30.2467 42.2014 34.5C42.2014 38.7533 38.7533 42.2014 34.5 42.2014Z' fill='#344C69'/>
+</svg>"
+
+'Visual Measure'[Total Freight Value - Sparkline - Card - Product] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used Total Categories along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Total Freight Value] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Total Freight Value] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT ( 50 * DIVIDE ( [Total Freight Value] - YMinValue, YMaxValue - YMinValue ) )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Total Freight Value - Subtitle - Card - Sales] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Total Freight Value] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Total Freight Value] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Freight Value], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Freight Value], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Total Freight Value] ), "-",
+        [LM MOM % Total Freight Value] = 0, "No MoM Change",
+        [LM MOM % Total Freight Value] < 0, __Negative,
+        [LM MOM % Total Freight Value] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Total Ordered Products - Sparkline - Card - Product] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Total Ordered Products] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Total Ordered Products] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT (
+                50
+                    * DIVIDE ( [Total Ordered Products] - YMinValue, YMaxValue - YMinValue )
+            )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Total Ordered Products - Subtitle - Card - Product] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Total Ordered Products] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Total Ordered Products] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Ordered Products], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Ordered Products], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Total Ordered Products] ), "-",
+        [LM MOM % Total Ordered Products] = 0, "No MoM Change",
+        [LM MOM % Total Ordered Products] < 0, __Negative,
+        [LM MOM % Total Ordered Products] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Total Ordered Products - Title Color - Card - Product] = 
+SWITCH (
+    TRUE (),
+    [LM MOM % Total Ordered Products] > 0, [Positive Color],
+    [LM MOM % Total Ordered Products] < 0, [Negative Color]
+)
+
+'Visual Measure'[Total Orders - Sparkline - Card - Sales] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Total Orders] ) )
+VAR YMaxValue =
+    MAXX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Total Orders] ) ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT ( 50 * DIVIDE ( [Total Orders] - YMinValue, YMaxValue - YMinValue ) )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Total Orders - Title - Subtitle - Sales] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Total Orders] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Total Orders] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Orders], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Orders], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Total Orders] ), "-",
+        [LM MOM % Total Orders] < 0, __Negative,
+        [LM MOM % Total Orders] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Total Orders - Title Color - Card - Sales] = 
+SWITCH (
+    TRUE (),
+    [LM MOM % Total Orders] > 0, [Positive Color],
+    [LM MOM % Total Orders] < 0, [Negative Color]
+)
+
+'Visual Measure'[Total Product Metric - Pareto Category - Product] = 
+CALCULATE ( [Selected Product Metric], ALL ( 'Orders' ) )
+
+'Visual Measure'[Total Products - Sparkline - Card - Product] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used Total Categories along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Total Products] ) )
+VAR YMaxValue =
+    MAXX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Total Products] ) ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT ( 50 * DIVIDE ( [Total Products] - YMinValue, YMaxValue - YMinValue ) )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Total Products - Subtitle - Card - Product] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Total Products] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Total Products] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Products], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Products], "0.00%" ) & " MOM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Total Products] ), "-",
+        [LM MOM % Total Products] = 0, "No MoM Change",
+        [LM MOM % Total Products] < 0, __Negative,
+        [LM MOM % Total Products] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Total Products - Title Color - Card - Product] = 
+SWITCH (
+    TRUE (),
+    [LM MOM % Total Products] > 0, [Positive Color],
+    [LM MOM % Total Products] < 0, [Negative Color]
+)
+
+'Visual Measure'[Total Revenue - Sparkline - Card - Sales] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Total Revenue (Payments)] )
+    )
+VAR YMaxValue =
+    MAXX (
+        VALUES ( 'Calendar'[Start of Month] ),
+        CALCULATE ( [Total Revenue (Payments)] )
+    ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT (
+                50
+                    * DIVIDE ( [Total Revenue (Payments)] - YMinValue, YMaxValue - YMinValue )
+            )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+
+'Visual Measure'[Total Revenue (Payments) - Subtitle - Card - Sales] = 
+VAR __Arrow =
+    SWITCH (
+        TRUE (),
+        [LM MOM % Total Revenue (Payments)] > 0, UNICHAR ( 11165 ),
+        [LM MOM % Total Revenue (Payments)] < 0, UNICHAR ( 11167 )
+    )
+VAR __Negative =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Revenue (Payments)], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Positive =
+    __Arrow & REPT ( " ", 2 )
+        & FORMAT ( [LM MOM % Total Revenue (Payments)], "0.00%" ) & " MoM Change"
+        & REPT ( " ", 2 ) & __Arrow
+VAR __Result =
+    SWITCH (
+        TRUE (),
+        ISBLANK ( [LM MOM % Total Revenue (Payments)] ), "-",
+        [LM MOM % Total Revenue (Payments)] < 0, __Negative,
+        [LM MOM % Total Revenue (Payments)] > 0, __Positive
+    )
+RETURN
+    __Result
+
+'Visual Measure'[Total Revenue (Payments) - Title Color - Card - Sales] = 
+SWITCH (
+    TRUE (),
+    [LM MOM % Total Revenue (Payments)] > 0, [Positive Color],
+    [LM MOM % Total Revenue (Payments)] < 0, [Negative Color]
+)
+
+'Visual Measure'[Total Sales Metric - Pareto Seller - Sales] = 
+CALCULATE ( [Selected Sales Metric], ALL ( 'Orders' ) )
+
+'Visual Measure'[Total Sellers - Sparkline - Card - Sales] = 
+// Static line color - use %23 instead of # for Firefox compatibility (Measure Derived from Eldersveld Modified by Kolosko)
+VAR LineColour = "%23344C69"
+VAR PointColour = "%23F9F9F9"
+VAR Defs = "<defs>
+    <linearGradient id='grad' x1='0' y1='25' x2='0' y2='50' gradientUnits='userSpaceOnUse'>
+        <stop stop-color='#4D6A8D' offset='0' />
+        <stop stop-color='#4D6A8D' offset='0.3' />
+        <stop stop-color='#F9F9F9' offset='1' />
+    </linearGradient>
+</defs>" // "Date" field used in this example along the X axis
+VAR XMinDate =
+    MIN ( 'Calendar'[Start of Month] )
+VAR XMaxDate =
+    MAX ( 'Calendar'[Start of Month] ) // Obtain overall min and overall max measure values when evaluated for each date
+VAR YMinValue =
+    MINX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Total Sellers] ) )
+VAR YMaxValue =
+    MAXX ( VALUES ( 'Calendar'[Start of Month] ), CALCULATE ( [Total Sellers] ) ) // Build table of X & Y coordinates and fit to 50 x 150 viewbox
+VAR SparklineTable =
+    ADDCOLUMNS (
+        SUMMARIZE ( 'Calendar', 'Calendar'[Start of Month] ),
+        "X",
+            INT (
+                150
+                    * DIVIDE ( 'Calendar'[Start of Month] - XMinDate, XMaxDate - XMinDate )
+            ),
+        "Y",
+            INT ( 50 * DIVIDE ( [Total Sellers] - YMinValue, YMaxValue - YMinValue ) )
+    ) // Concatenate X & Y coordinates to build the sparkline
+VAR Lines =
+    CONCATENATEX (
+        SparklineTable,
+        [X] & "," & 50 - [Y],
+        " ",
+        'Calendar'[Start of Month]
+    ) // Last data points on the line
+VAR LastSparkYValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [Y] )
+VAR LastSparkXValue =
+    MAXX ( FILTER ( SparklineTable, 'Calendar'[Start of Month] = XMaxDate ), [X] ) // Add to SVG, and verify Data Category is set to Image URL for this measure
+VAR SVGImageURL = "data:image/svg+xml;utf8," & --- gradient---
+"<svg xmlns='http://www.w3.org/2000/svg' x='0px' y='0px' viewBox='-7 -7 164 64'>" & Defs & "<polyline fill='url(#grad)' fill-opacity='0.3' stroke='transparent' 
+      stroke-width='0' points=' 0 50 " & Lines & " 150 150 Z '/>" & --- Lines---
+"<polyline 
+        fill='transparent' stroke='" & LineColour & "' 
+        stroke-linecap='round' stroke-linejoin='round' 
+        stroke-width='2' points=' " & Lines & " '/>" & --- Last Point---
+"<circle cx='" & LastSparkXValue & "' cy='" & 50 - LastSparkYValue & "' r='4' stroke='" & LineColour & "' stroke-width='2' fill='" & PointColour & "' />" & "</svg>"
+RETURN
+    SVGImageURL
+---- MODEL MEASURES END ----
+
+
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Total Customers (Payments)] = 
+VAR __ValueCurrentPeriod = [Total Customers (Payments)]
+VAR __ValuePreviousPeriod = [PY Total Customers (Payments)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Total Freight Value] = 
+VAR __ValueCurrentPeriod = [Total Freight Value]
+VAR __ValuePreviousPeriod = [PY Total Freight Value]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Total Ordered Products] = 
+VAR __ValueCurrentPeriod = [Total Ordered Products]
+VAR __ValuePreviousPeriod = [PY Total Ordered Products]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Total Orders] = 
+VAR __ValueCurrentPeriod = [Total Orders]
+VAR __ValuePreviousPeriod = [PY Total Orders]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Total Products] = 
+VAR __ValueCurrentPeriod = [Total Products]
+VAR __ValuePreviousPeriod = [PY Total Products]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Total Revenue (Payments)] = 
+VAR __ValueCurrentPeriod = [Total Revenue (Payments)]
+VAR __ValuePreviousPeriod = [PY Total Revenue (Payments)]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result
+
+'Measure'[YOY Total Sellers] = 
+VAR __ValueCurrentPeriod = [Total Sellers]
+VAR __ValuePreviousPeriod = [PY Total Sellers]
+VAR __Result =
+    IF (
+        NOT ISBLANK ( __ValueCurrentPeriod ) && NOT ISBLANK ( __ValuePreviousPeriod ),
+        __ValueCurrentPeriod - __ValuePreviousPeriod
+    )
+RETURN
+    __Result

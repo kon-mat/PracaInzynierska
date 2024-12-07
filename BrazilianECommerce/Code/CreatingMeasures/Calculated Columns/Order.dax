@@ -89,3 +89,15 @@ DATEDIFF (
     RELATED ( 'Calendar'[Start of Month] ),
     MONTH
 )
+
+Delivery Hour = HOUR('Order'[Customer Delivery Time])
+
+Average Order Rating = 
+VAR __CurrentOrder = 'Order'[Order Id]
+VAR __Result =
+    CALCULATE (
+        AVERAGE ( 'Reviews'[Score] ),
+        FILTER ( Reviews, Reviews[Order Id] = __CurrentOrder )
+    )
+RETURN
+    __Result
