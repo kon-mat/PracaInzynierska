@@ -1,4 +1,4 @@
-# PRACA DYPLOMOWA INŻYNIERSKA
+# PRACA INŻYNIERSKA
 
 ## Temat pracy
 
