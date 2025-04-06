@@ -1,16 +1,12 @@
-# Notice
-
-:warning: The project is Polish-oriented.
-
 # PRACA DYPLOMOWA INŻYNIERSKA
 
 ## Temat pracy
 
-...
+Analiza i wizualizacja danych e-commerce przy użyciu Power BI
 
-## Promotor/opiekun pracy
+## Promotor, Recenzent
 
-...
+dr inż. Konrad Grzanek, dr inż. Zbigniew Filutowicz
 
 ## Autor
 
